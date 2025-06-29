@@ -9,13 +9,20 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * Representa una sala de juego en el sistema.
+ * Esta clase se utiliza para transferir información de salas entre el cliente
+ * y el servidor, así como para almacenar las salas en Redis. Implementa Serializable
+ * para permitir su almacenamiento en cache.
+ *
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "Información de una sala de juego")
 public class RoomDTO implements Serializable {
-    private@Schema(description = "Identificador de la sala", example = "12s9")
-    String roomId;
+    @Schema(description = "Identificador de la sala", example = "12s9")
+    private String roomId;
     @Schema(description = "Nombre del host de la sala", example = "player123")
     private String host;
     @Schema(description = "Modo de juego de la sala", example = "COMPETITIVE")
