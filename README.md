@@ -1,17 +1,15 @@
 # Serpentia - Juego Multijugador
 
-## Descripción
-Serpentia es un juego multijugador de serpientes con autenticación JWT, WebSocket para comunicación en tiempo real y base de datos PostgreSQL.
-
-API REST para el juego multijugador Serpentia desarrollado con Spring Boot.
+## 📖 Descripción
+Serpentia es un juego multijugador de serpientes desarrollado con Spring Boot que incluye autenticación JWT, comunicación en tiempo real mediante WebSocket, y persistencia distribuida con PostgreSQL y Redis.
 
 ## 🚀 Características
 
 - **Autenticación JWT**: Sistema seguro de autenticación
-  - **WebSocket**: Comunicación en tiempo real
-  - **Redis**: Cache y sesiones
-  - **PostgreSQL**: Base de datos principal
-  - **Documentación API**: Swagger/OpenAPI 3
+   - **WebSocket**: Comunicación en tiempo real
+   - **Redis**: Cache y sesiones
+   - **PostgreSQL**: Base de datos principal
+   - **Documentación API**: Swagger/OpenAPI 3
 
 ## 📚 Documentación de la API
 
@@ -20,38 +18,36 @@ API REST para el juego multijugador Serpentia desarrollado con Spring Boot.
 Una vez que la aplicación esté ejecutándose, puedes acceder a la documentación interactiva de la API en:
 
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON**: http://localhost:8080/api-docs
 
-### Endpoints Documentados
 
-#### Autenticación (`/api/auth`)
-- `POST /api/auth/register` - Registrar nuevo usuario
-  - `POST /api/auth/login` - Iniciar sesión
+## 🛠️ Stack Tecnológico
 
-#### Usuario (`/api/user`)
-- `GET /api/user/profile` - Obtener perfil del usuario
-  - `PATCH /api/user/profile` - Actualizar perfil del usuario
+### Backend
+- **Spring Boot 3.5.3**: Framework principal
+- **Java 17**: Lenguaje de programación
+- **Spring Security**: Autenticación y autorización
+- **Spring Data JPA**: Persistencia de datos
+- **Spring WebSocket**: Comunicación en tiempo real
+- **JWT (jjwt 0.11.5)**: Tokens de autenticación
+- **Lombok**: Reducción de código boilerplate
 
-### Autenticación
+### Base de Datos
+- **PostgreSQL**: Base de datos principal
+- **Redis**: Cache y sesiones en tiempo real
 
-La API utiliza autenticación JWT. Para endpoints protegidos:
+### Documentación
+- **SpringDoc OpenAPI 2.3.0**: Documentación de API
+- **Swagger UI**: Interfaz de documentación interactiva
 
-1. Obtén un token haciendo login en `/api/auth/login`
-   2. Incluye el token en el header: `Authorization: Bearer <token>`
+## 📦 Instalación y Configuración
 
-## 🛠️ Tecnologías
+### Requisitos Previos
+- Java 17 o superior
+- Maven 3.6 o superior
+- PostgreSQL 12 o superior
+- Redis 6 o superior
 
-- **Spring Boot 3.5.3**
-  - **Java 17**
-  - **Spring Security + JWT**
-  - **Spring Data JPA**
-  - **PostgreSQL**
-  - **Redis**
-  - **WebSocket**
-  - **Lombok**
-  - **SpringDoc OpenAPI**
-
-## 📦 Instalación
+### Configuración Rápida
 
 1. **Clonar el repositorio**
    ```bash
@@ -65,65 +61,139 @@ La API utiliza autenticación JWT. Para endpoints protegidos:
    DB_URL=jdbc:postgresql://localhost:5432/serpentia
    DB_USERNAME=your_username
    DB_PASSWORD=your_password
+   REDIS_ADDR=localhost
+   REDIS_PORT=6379
+   REDIS_USERNAME=default
+   REDIS_PASSWORD=your_redis_password
+   JWT_SECRET=your_jwt_secret_key_here
    ```
 
-3. **Ejecutar la aplicación**
+3. **Crear base de datos PostgreSQL**
+   ```sql
+   CREATE DATABASE serpentia;
+   ```
+
+4. **Ejecutar la aplicación**
    ```bash
    mvn spring-boot:run
    ```
 
-## 🔧 Configuración
+## 🔌 Endpoints 
 
-### Base de Datos
-- PostgreSQL 12+
-- Crear base de datos: `serpentia`
+### Autenticación (`/api/auth`)
+- `POST /api/auth/register` - Registrar nuevo usuario
+- `POST /api/auth/login` - Iniciar sesión
 
-### Redis
-- Redis 6+
-- Puerto por defecto: 6379
+### Usuario (`/api/user`)
+- `GET /api/user/profile` - Obtener perfil del usuario
+- `PATCH /api/user/profile` - Actualizar perfil del usuario
 
-## 📖 Uso de la Documentación
+### Salas (`/api/lobby`)
+- `GET /api/lobby/rooms` - Obtener todas las salas
+- `POST /api/lobby/rooms` - Crear nueva sala
+- `POST /api/lobby/rooms/{roomId}/join` - Unirse a sala
+- `DELETE /api/lobby/rooms/{roomId}/leave` - Salir de sala
+- `DELETE /api/lobby/rooms/{roomId}` - Eliminar sala
+- `DELETE /api/lobby/rooms` - Eliminar todas las salas
 
-### En Swagger UI:
-1. Abre http://localhost:8080/swagger-ui.html
-2. Explora los endpoints organizados por tags
-3. Prueba los endpoints directamente desde la interfaz
-4. Para endpoints protegidos, usa el botón "Authorize" para incluir tu token JWT
+### WebSocket
+- `ws://localhost:8080/ws` - Conexión WebSocket
+- `/topic/lobby` - Eventos de salas en tiempo real
 
-### Ejemplos de Uso:
+## 🔐 Autenticación
 
-#### Registrar un usuario:
+La API utiliza autenticación JWT. Para endpoints protegidos:
+
+1. **Obtener token**: Hacer login en `/api/auth/login`
+2. **Incluir token**: Header `Authorization: Bearer <token>`
+
+### Ejemplo de uso:
 ```bash
-curl -X POST "http://localhost:8080/api/auth/register" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "username": "player123",
-       "email": "player@example.com",
-       "password": "password123"
-     }'
-```
-
-#### Hacer login:
-```bash
+# Login
 curl -X POST "http://localhost:8080/api/auth/login" \
      -H "Content-Type: application/json" \
-     -d '{
-       "username": "player123",
-       "password": "password123"
-     }'
+     -d '{"username": "player123", "password": "password123"}'
+
+# Usar token
+curl -X GET "http://localhost:8080/api/user/profile" \
+     -H "Authorization: Bearer <token>"
+```
+
+## 🎮 Modelos de Datos
+
+### User (Entidad)
+```java
+@Entity
+@Table(name = "users")
+public class User {
+    private Long id;
+    private String username;        // Único, 3-15 caracteres alfanuméricos
+    private String email;           // Único, formato válido
+    private String password;        // Encriptado con BCrypt
+    private Integer gamesPlayed;    // Partidas jugadas
+    private Integer gamesWon;       // Partidas ganadas
+    private Integer totalPoints;    // Puntos totales acumulados
+    private Integer bigPoints;      // Mejor puntuación individual
+}
+```
+
+### RoomDTO
+```java
+public class RoomDTO {
+    private String roomId;                    // Identificador único de la sala
+    private String host;                      // Usuario host de la sala
+    private GameMode gameMode;                // COMPETITIVE, TEAM, COOPERATIVE
+    private int maxPlayers;                   // Máximo de jugadores permitidos
+    private List<String> currentPlayers;      // Lista de jugadores actuales
+    private boolean isFull;                   // Indica si la sala está llena
+    private boolean powerups;                 // Indica si los powerups están habilitados
+}
+```
+
+### UserStatistics
+```java
+public class UserStatistics {
+    private Integer gamesPlayed;    // Total de partidas jugadas
+    private Integer gamesWon;       // Total de partidas ganadas
+    private Integer totalPoints;    // Puntos totales acumulados
+    private Integer bigPoints;      // Mejor puntuación individual
+    private float ratioWin;         // Ratio de victorias (calculado automáticamente)
+}
+```
+
+## 🔄 Flujos de Comunicación
+
+### WebSocket Events
+- **CREATED**: Nueva sala creada
+- **UPDATED**: Sala actualizada (jugador unido/salido)
+- **DELETED**: Sala eliminada
+- **CLEARED**: Todas las salas eliminadas
+
+### Ejemplo de evento:
+```json
+{
+    "type": "UPDATED",
+    "room": {
+        "roomId": "12s9",
+        "host": "player123",
+        "gameMode": "COMPETITIVE",
+        "maxPlayers": 4,
+        "currentPlayers": ["player123", "player456"],
+        "isFull": false,
+        "powerups": true
+    }
+}
 ```
 
 ## 🧪 Testing
 
 ```bash
+# Ejecutar tests unitarios
 mvn test
+
+# Ejecutar tests de integración
+mvn verify
 ```
-
-## 📝 Notas de Desarrollo
-
-- La documentación se genera automáticamente desde las anotaciones en el código
-- Usa `@Operation`, `@ApiResponse`, `@Schema` para documentar endpoints y DTOs
-- Los ejemplos en la documentación son interactivos y se pueden probar directamente
 
 ## 🤝 Contribución
 
@@ -137,169 +207,24 @@ mvn test
 
 Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
 
-## Requisitos Previos
-- Java 17
-- Maven
-- PostgreSQL
-- Redis (opcional, para futuras funcionalidades)
-
-## Ejecutar la Aplicación
-```bash
-mvn spring-boot:run
-```
-
-## Endpoints de la API
-
-### Autenticación
-
-#### Registro de Usuario
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-    "username": "usuario123",
-    "email": "usuario@ejemplo.com",
-    "password": "password123"
-}
-```
-
-**Validaciones:**
-- Username: 3-15 caracteres alfanuméricos
-- Email: formato válido y único
-- Password: mínimo 6 caracteres
-
-#### Inicio de Sesión
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-    "username": "usuario123",
-    "password": "password123"
-}
-```
-
-**Respuesta:**
-```json
-{
-    "token": "eyJhbGciOiJIUzI1NiJ9..."
-}
-```
-
-### Perfil de Usuario
-
-#### Obtener Perfil
-```http
-GET /api/user/profile
-Authorization: Bearer <token>
-```
-
-**Respuesta:**
-```json
-{
-    "gamesPlayed": 10,
-    "gamesWon": 5,
-    "totalPoints": 1500,
-    "bestScore": 200,
-    "winRate": 0.5
-}
-```
-
-### Endpoints de Prueba
-
-#### Endpoint Público
-```http
-GET /api/test/public
-```
-
-#### Endpoint Protegido
-```http
-GET /api/test/protected
-Authorization: Bearer <token>
-```
-
-## WebSocket
-
-### Conexión
-```javascript
-const socket = new SockJS('http://localhost:8080/ws');
-const stompClient = Stomp.over(socket);
-```
-
-### Destinos
-- `/topic/lobby` - Actualizaciones del lobby
-- `/topic/game/{gameId}` - Actualizaciones del juego
-- `/app/join-game` - Unirse a un juego
-- `/app/leave-game` - Salir de un juego
-
-## Estructura del Proyecto
-
-```
-src/main/java/com/serpentia/
-├── config/
-│   └── WebSocketConfig.java
-├── controller/
-│   ├── AuthController.java
-│   ├── UserController.java
-│   └── TestController.java
-├── dto/
-│   ├── AuthRequest.java
-│   ├── AuthResponse.java
-│   ├── RegisterRequest.java
-│   └── UserProfileResponse.java
-├── model/
-│   └── User.java
-├── repository/
-│   └── UserRepository.java
-├── security/
-│   ├── JwtAuthenticationFilter.java
-│   ├── JwtTokenProvider.java
-│   ├── JwtUtil.java
-│   └── SecurityConfig.java
-├── service/
-│   ├── AuthService.java
-│   └── UserService.java
-└── SerpentiaApplication.java
-```
-
 ## Funcionalidades Implementadas
 
 ### ✅ Completadas
 - [x] Registro de usuario con validaciones
 - [x] Inicio de sesión con JWT
 - [x] Autenticación y autorización
-- [x] Perfil de usuario con estadísticas
 - [x] Base de datos PostgreSQL
 - [x] Encriptación de contraseñas
-
+- [x] Comunicación en tiempo real
+- [x] Configuración de WebSocket
+- [x] Lobby de juegos
+- [x] Creación de salas
 ### 🔄 En Progreso
-- [ ] Lobby de juegos
-- [ ] Creación de salas
+
 - [ ] Lógica del juego
-- [ ] Comunicación en tiempo real
-- [ ] Configuración de WebSocket
+- [ ] Diferentes modos de juego
 
 ### 📋 Pendientes
 - [ ] Power-ups
 - [ ] Chat rápido
-- [ ] Diferentes modos de juego
-- [ ] Estadísticas avanzadas
-
-## Próximos Pasos
-
-1. **Implementar el Lobby**: Crear la lógica para mostrar salas disponibles
-2. **Sistema de Salas**: Permitir crear y unirse a salas de juego
-3. **Lógica del Juego**: Implementar el juego de serpientes multijugador
-4. **WebSocket Game Events**: Comunicación en tiempo real durante el juego
-5. **Frontend**: Interfaz de usuario para el juego
-
-## Tecnologías Utilizadas
-
-- **Backend**: Spring Boot 3.5.3
-- **Seguridad**: Spring Security + JWT
-- **Base de Datos**: PostgreSQL + JPA/Hibernate
-- **Comunicación**: WebSocket + STOMP
-- **Cache**: Redis (configurado para futuras funcionalidades)
-- **Build Tool**: Maven
-- **Java**: 17 
+- [ ] Perfil de usuario con estadísticas

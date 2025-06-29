@@ -3,6 +3,9 @@ package com.serpentia.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Entidad que representa un usuario en el sistema.
+ */
 @Entity
 @Data
 @Table(name = "users")
@@ -23,6 +26,13 @@ public class User {
     private Integer totalPoints = 0;
     private Integer bigPoints = 0;
 
+    /**
+     * Constructor para crear un nuevo usuario con información básica.
+     *
+     * @param username Nombre de usuario único
+     * @param email Dirección de correo electrónico única
+     * @param password Contraseña encriptada
+     */
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;

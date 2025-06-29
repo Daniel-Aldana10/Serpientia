@@ -17,6 +17,23 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  redis:
+    port: ${REDIS_PORT}
+    username: ${REDIS_USERNAME}  # Usualmente 'default'
+    password: ${REDIS_PASSWORD}
+    database: 0
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${REDIS_ADDR}
+      port: 11034
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
+      database: 0
+    cache:
+      type: redis
+
 
 # Configuración de OpenAPI/Swagger
 springdoc:

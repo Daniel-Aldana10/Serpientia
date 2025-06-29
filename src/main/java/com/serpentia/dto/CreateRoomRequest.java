@@ -11,6 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(description = "Solicitud para crear una nueva sala de juego")
 public class CreateRoomRequest {
+    private@Schema(description = "Identificador de la sala", example = "12s9")
+    String roomId;
+    @Schema(description = "Nombre del host de la sala", example = "player123")
+    private String host;
     @Schema(description = "Modo de juego de la sala", example = "COMPETITIVE", required = true)
     private GameMode gameMode;
     
