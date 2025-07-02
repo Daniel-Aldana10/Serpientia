@@ -31,7 +31,6 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**", "/ws/info/**").permitAll() // <-- permite acceso anónimo
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtEntryPoint()))
                 .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -41,10 +40,7 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter();
     }
 
-    @Bean
-    public JwtEntryPoint jwtEntryPoint(){
-        return new JwtEntryPoint();
-    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder(){

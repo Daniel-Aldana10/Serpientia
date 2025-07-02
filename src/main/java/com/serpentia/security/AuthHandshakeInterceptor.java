@@ -31,7 +31,7 @@ public class AuthHandshakeInterceptor implements HandshakeInterceptor {
 
             try {
                 String username = jwtUtil.extractUserName(token);
-                attributes.put("username", username);  // Guarda el username para usar después
+                attributes.put("username", username);
                 return true;
             } catch (Exception e) {
                 System.out.println("Token inválido: " + e.getMessage());
@@ -48,6 +48,6 @@ public class AuthHandshakeInterceptor implements HandshakeInterceptor {
                                ServerHttpResponse response,
                                WebSocketHandler wsHandler,
                                Exception exception) {
-        // No se necesita lógica post-handshake aquí
+
     }
 }

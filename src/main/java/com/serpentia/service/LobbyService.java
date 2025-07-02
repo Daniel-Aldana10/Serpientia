@@ -1,13 +1,11 @@
 package com.serpentia.service;
 
-import com.serpentia.dto.CreateRoomRequest;
 import com.serpentia.dto.RoomDTO;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.serpentia.repository.LobbyRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.serpentia.websocket.RoomEvent;
 
@@ -25,22 +23,19 @@ import com.serpentia.websocket.RoomEvent;
 @Service
 public class LobbyService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
     private final SimpMessagingTemplate messagingTemplate;
+    private final LobbyRepository lobbyRepository;
     
-    /**
-     * Prefijo utilizado para las claves de salas en Redis.
-     */
-    private static final String ROOM_KEY_PREFIX = "room:";
+
 
     /**
      * Constructor que inyecta las dependencias necesarias.
      * 
-     * @param redisTemplate Template de Redis para operaciones de cache
+     * @param lobbyRepository Repositorio de las salas
      * @param messagingTemplate Template para envío de mensajes WebSocket
      */
-    public LobbyService(RedisTemplate<String, Object> redisTemplate, SimpMessagingTemplate messagingTemplate) {
-        this.redisTemplate = redisTemplate;
+    public LobbyService(LobbyRepository lobbyRepository, SimpMessagingTemplate messagingTemplate) {
+        this.lobbyRepository = lobbyRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -61,8 +56,7 @@ public class LobbyService {
                 messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("CREATED", room));
             }
         }
-
-        redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.getRoomId(), room);
+        lobbyRepository.saveRoom(room);
         return room;
     }
 
@@ -73,8 +67,7 @@ public class LobbyService {
      * @return Sala encontrada o null si no existe
      */
     public RoomDTO getRoom(String roomId) {
-        Object roomObj = redisTemplate.opsForValue().get(ROOM_KEY_PREFIX + roomId);
-        return roomObj != null ? (RoomDTO) roomObj : null;
+        return lobbyRepository.getRoom(roomId);
     }
 
     /**
@@ -83,12 +76,7 @@ public class LobbyService {
      * @return Lista de todas las salas activas
      */
     public List<RoomDTO> getAllRooms() {
-        Set<String> keys = redisTemplate.keys(ROOM_KEY_PREFIX + "*");
-        if (keys == null) return new ArrayList<>();
-        return keys.stream()
-                .map(k -> (RoomDTO) redisTemplate.opsForValue().get(k))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return lobbyRepository.getAllRooms();
     }
 
     /**
@@ -100,13 +88,12 @@ public class LobbyService {
     public void deleteRoom(String username, String roomId) {
         RoomDTO room = getRoom(roomId);
         if (room != null && room.getHost().equals(username)) {
-            redisTemplate.delete(ROOM_KEY_PREFIX + roomId);
+            lobbyRepository.deleteRoom(roomId);
         }
     }
 
     /**
      * Añade un jugador a una sala específica.
-     * 
      * Este método valida que la sala exista y que el jugador no esté ya en ella.
      * Si la sala se llena después de añadir al jugador, se marca como llena.
      * Se envía una notificación de actualización a todos los clientes conectados.
@@ -115,15 +102,14 @@ public class LobbyService {
      * @param player Nombre del jugador a añadir
      */
     public void addPlayerToRoom(String roomId, String player) {
-        System.out.print("id " + roomId + " player " + player);
         RoomDTO room = getRoom(roomId);
         if (room != null && !room.getCurrentPlayers().contains(player)) {
             room.getCurrentPlayers().add(player);
             if (room.getCurrentPlayers().size() >= room.getMaxPlayers()) {
                 room.setFull(true);
             }
-            System.out.println(room);
-            saveRoom(room);
+
+            lobbyRepository.saveRoom(room);
             messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("UPDATED", room));
         }
     }
@@ -135,12 +121,13 @@ public class LobbyService {
      */
     public void deletePlayerToRoom(String roomId, String player) {
         RoomDTO room = getRoom(roomId);
-        System.out.println("se quiere eliminar esta sala " + room);
+
         if(room != null && room.getCurrentPlayers().contains(player)) {
             room.getCurrentPlayers().remove(player);
             
             // Transferir host si el host sale y hay otros jugadores
             if(room.getHost().equals(player) && room.getCurrentPlayers().size() >= 1){
+
                 room.setHost(room.getCurrentPlayers().get(0));
             } else if (room.getCurrentPlayers().isEmpty()) {
                 // Eliminar sala si queda vacía
@@ -153,18 +140,13 @@ public class LobbyService {
             if (room.getCurrentPlayers().size() < room.getMaxPlayers()) {
                 room.setFull(false);
             }
-            
-            System.out.println("Jugador eliminado: " + player + " de sala " + roomId);
-            saveRoom(room);
+            lobbyRepository.saveRoom(room);
             messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("UPDATED", room));
         }
     }
 
     public void deleteAllRooms() {
-        Set<String> keys = redisTemplate.keys(ROOM_KEY_PREFIX + "*");
-        System.out.println("Claves existentes: " + keys);
-        if (keys != null && !keys.isEmpty()) {
-            redisTemplate.delete(keys);
+        if(lobbyRepository.deleteAllRooms()) {
             messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("CLEARED", null));
         }
     }

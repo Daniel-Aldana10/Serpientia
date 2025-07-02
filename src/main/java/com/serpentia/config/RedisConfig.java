@@ -21,9 +21,9 @@ public class RedisConfig {
     /**
      * Configura el template de Redis para operaciones de cache.
      * 
-     * <p>Este bean configura cómo se serializan y deserializan los objetos
+     * Este bean configura cómo se serializan y deserializan los objetos
      * almacenados en Redis. La configuración está optimizada para el almacenamiento
-     * de salas de juego con sus propiedades complejas.</p>
+     * de salas de juego con sus propiedades complejas.<
      *
      * @param connectionFactory Factory de conexión a Redis configurada automáticamente
      * @return RedisTemplate configurado para operaciones de cache

@@ -33,12 +33,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     /**
      * Registra los endpoints de WebSocket.
      * 
-     * <p>Configura el endpoint principal "/ws" con las siguientes características:</p>
-     * <ul>
-     *   <li>Soporte para SockJS para compatibilidad con navegadores</li>
-     *   <li>Interceptor de autenticación para validar tokens JWT</li>
-     *   <li>CORS configurado para permitir conexiones desde el frontend</li>
-     * </ul>
+     * <Configura el endpoint principal "/ws" con las siguientes características:
+     *
+     * Soporte para SockJS para compatibilidad con navegadores
+     * Interceptor de autenticación para validar tokens JWT
+     * CORS configurado para permitir conexiones desde el frontend
+     *
      * 
      * @param registry Registro de endpoints STOMP
      */
@@ -52,12 +52,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
      * Configura el broker de mensajes.
-     * 
-     * <p>Configura un broker simple que permite:</p>
-     * <ul>
-     *   <li>Enviar mensajes a topics con el prefijo "/topic"</li>
-     *   <li>Recibir mensajes de aplicaciones con el prefijo "/app"</li>
-     * </ul>
+     * Configura un broker simple que permite:
+     * Enviar mensajes a topics con el prefijo "/topic"
+     * Recibir mensajes de aplicaciones con el prefijo "/app"<
      * 
      * @param registry Registro de configuración del broker
      */
