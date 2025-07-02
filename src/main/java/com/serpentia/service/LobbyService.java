@@ -4,10 +4,13 @@ import com.serpentia.dto.RoomDTO;
 import com.serpentia.repository.LobbyRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.*;
 
 import com.serpentia.websocket.RoomEvent;
+import com.serpentia.exeptions.SerpentiaException;
 
 /**
  * Servicio que maneja toda la lógica de negocio relacionada con las salas de juego.
@@ -81,68 +84,79 @@ public class LobbyService {
 
     /**
      * Elimina una sala específica.
-     *
+     * Lanza SerpentiaException si la sala no existe o el usuario no es el host.
      * @param username Nombre del usuario que intenta eliminar la sala
      * @param roomId Identificador de la sala a eliminar
      */
     public void deleteRoom(String username, String roomId) {
         RoomDTO room = getRoom(roomId);
-        if (room != null && room.getHost().equals(username)) {
-            lobbyRepository.deleteRoom(roomId);
+        if (room == null) {
+            throw new SerpentiaException("Sala no encontrada", "¡Ups! No se encontró la sala.", org.springframework.http.HttpStatus.NOT_FOUND);
         }
+        if (!room.getHost().equals(username)) {
+            throw new SerpentiaException("Solo el host puede eliminar la sala", "No tienes permisos para eliminar la sala.", org.springframework.http.HttpStatus.FORBIDDEN);
+        }
+        lobbyRepository.deleteRoom(roomId);
     }
 
     /**
      * Añade un jugador a una sala específica.
-     * Este método valida que la sala exista y que el jugador no esté ya en ella.
-     * Si la sala se llena después de añadir al jugador, se marca como llena.
-     * Se envía una notificación de actualización a todos los clientes conectados.
-     * 
+     * Lanza SerpentiaException si la sala no existe, está llena o el usuario ya está en la sala.
      * @param roomId Identificador de la sala
      * @param player Nombre del jugador a añadir
      */
     public void addPlayerToRoom(String roomId, String player) {
         RoomDTO room = getRoom(roomId);
-        if (room != null && !room.getCurrentPlayers().contains(player)) {
-            room.getCurrentPlayers().add(player);
-            if (room.getCurrentPlayers().size() >= room.getMaxPlayers()) {
-                room.setFull(true);
-            }
-
-            lobbyRepository.saveRoom(room);
-            messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("UPDATED", room));
+        if (room == null) {
+            throw new SerpentiaException("Sala no encontrada", "¡Ups! No se encontró la sala.", org.springframework.http.HttpStatus.NOT_FOUND);
         }
+        if (room.getCurrentPlayers().contains(player)) {
+            throw new SerpentiaException("El usuario ya está en la sala", "Ya te encuentras en la sala.", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+        if (room.isFull() || room.getCurrentPlayers().size() >= room.getMaxPlayers()) {
+            throw new SerpentiaException("La sala está llena", "La sala ya no tiene cupo disponible.", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+        room.getCurrentPlayers().add(player);
+        if (room.getCurrentPlayers().size() >= room.getMaxPlayers()) {
+            room.setFull(true);
+        }
+        lobbyRepository.saveRoom(room);
+        messagingTemplate.convertAndSend("/topic/lobby", new com.serpentia.websocket.RoomEvent("UPDATED", room));
     }
 
     /**
      * Elimina un jugador de una sala específica.
+     * Lanza SerpentiaException si la sala no existe o el usuario no está en la sala.
      * @param roomId Identificador de la sala
      * @param player Nombre del jugador a eliminar
      */
     public void deletePlayerToRoom(String roomId, String player) {
         RoomDTO room = getRoom(roomId);
-
-        if(room != null && room.getCurrentPlayers().contains(player)) {
-            room.getCurrentPlayers().remove(player);
-            
-            // Transferir host si el host sale y hay otros jugadores
-            if(room.getHost().equals(player) && room.getCurrentPlayers().size() >= 1){
-
-                room.setHost(room.getCurrentPlayers().get(0));
-            } else if (room.getCurrentPlayers().isEmpty()) {
-                // Eliminar sala si queda vacía
-                deleteRoom(room.getHost(), roomId);
-                messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("DELETED", room));
-                return;
-            }
-            
-            // Actualizar estado de sala llena
-            if (room.getCurrentPlayers().size() < room.getMaxPlayers()) {
-                room.setFull(false);
-            }
-            lobbyRepository.saveRoom(room);
-            messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("UPDATED", room));
+        if (room == null) {
+            throw new SerpentiaException("Sala no encontrada", "¡Ups! No se encontró la sala.", org.springframework.http.HttpStatus.NOT_FOUND);
         }
+        if (!room.getCurrentPlayers().contains(player)) {
+            throw new SerpentiaException("El usuario no está en la sala", "No formas parte de la sala.", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+        room.getCurrentPlayers().remove(player);
+        
+        // Transferir host si el host sale y hay otros jugadores
+        if(room.getHost().equals(player) && room.getCurrentPlayers().size() >= 1){
+
+            room.setHost(room.getCurrentPlayers().get(0));
+        } else if (room.getCurrentPlayers().isEmpty()) {
+            // Eliminar sala si queda vacía
+            deleteRoom(room.getHost(), roomId);
+            messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("DELETED", room));
+            return;
+        }
+        
+        // Actualizar estado de sala llena
+        if (room.getCurrentPlayers().size() < room.getMaxPlayers()) {
+            room.setFull(false);
+        }
+        lobbyRepository.saveRoom(room);
+        messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("UPDATED", room));
     }
 
     public void deleteAllRooms() {

@@ -1,6 +1,6 @@
 # Serpentia - Juego Multijugador
 
-## 📖 Descripción
+##  Descripción
 Serpentia es un juego multijugador de serpientes desarrollado con Spring Boot que incluye autenticación JWT, comunicación en tiempo real mediante WebSocket, y persistencia distribuida con PostgreSQL y Redis.
 
 ## 🚀 Características
@@ -11,7 +11,7 @@ Serpentia es un juego multijugador de serpientes desarrollado con Spring Boot qu
    - **PostgreSQL**: Base de datos principal
    - **Documentación API**: Swagger/OpenAPI 3
 
-## 📚 Documentación de la API
+##  Documentación de la API
 
 ### Acceso a la Documentación
 
@@ -20,7 +20,7 @@ Una vez que la aplicación esté ejecutándose, puedes acceder a la documentaci�
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 
 
-## 🛠️ Stack Tecnológico
+##  Stack Tecnológico
 
 ### Backend
 - **Spring Boot 3.5.3**: Framework principal
@@ -39,7 +39,7 @@ Una vez que la aplicación esté ejecutándose, puedes acceder a la documentaci�
 - **SpringDoc OpenAPI 2.3.0**: Documentación de API
 - **Swagger UI**: Interfaz de documentación interactiva
 
-## 📦 Instalación y Configuración
+## Instalación y Configuración
 
 ### Requisitos Previos
 - Java 17 o superior
@@ -51,8 +51,8 @@ Una vez que la aplicación esté ejecutándose, puedes acceder a la documentaci�
 
 1. **Clonar el repositorio**
    ```bash
-   git clone <repository-url>
-   cd serpentia
+   git clone https://github.com/Daniel-Aldana10/Serpientia
+   cd Serpientia
    ```
 
 2. **Configurar variables de entorno**
@@ -67,13 +67,7 @@ Una vez que la aplicación esté ejecutándose, puedes acceder a la documentaci�
    REDIS_PASSWORD=your_redis_password
    JWT_SECRET=your_jwt_secret_key_here
    ```
-
-3. **Crear base de datos PostgreSQL**
-   ```sql
-   CREATE DATABASE serpentia;
-   ```
-
-4. **Ejecutar la aplicación**
+3 **Ejecutar la aplicación**
    ```bash
    mvn spring-boot:run
    ```
@@ -185,16 +179,6 @@ public class UserStatistics {
 }
 ```
 
-## 🧪 Testing
-
-```bash
-# Ejecutar tests unitarios
-mvn test
-
-# Ejecutar tests de integración
-mvn verify
-```
-
 ## 🤝 Contribución
 
 1. Fork el proyecto
@@ -228,3 +212,5 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - [ ] Power-ups
 - [ ] Chat rápido
 - [ ] Perfil de usuario con estadísticas
+
+

@@ -45,8 +45,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .addInterceptors(authHandshakeInterceptor) // Interceptor de autenticación
-                .setAllowedOrigins("http://localhost:5173") // CORS para frontend
+                .addInterceptors(authHandshakeInterceptor)
+                .setAllowedOrigins("http://localhost:5173")
                 .withSockJS(); // Soporte para SockJS
     }
 
