@@ -31,7 +31,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <-- ESTA LÍNEA
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/api-docs/**",
+                                "/api-docs/swagger-config"
+                        ).permitAll()
                         .requestMatchers("/ws/**", "/ws/info/**").permitAll() // <-- permite acceso anónimo
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
 
@@ -54,7 +55,12 @@ public class GlobalExceptionHandler {
      * @return respuesta con detalles del error y código 500
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDetails> handleGeneral(Exception ex) {
+    public ResponseEntity<ErrorDetails> handleGeneral(Exception ex, HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/v3/api-docs") || uri.startsWith("/swagger-ui") || uri.equals("/swagger-ui.html")) {
+            // Deja que Spring maneje estas rutas
+            return null;
+        }
         ErrorDetails errorDetails = ErrorDetails.builder()
                 .message(ex.getMessage())
                 .mensajeEspecial("Ha ocurrido un error inesperado. Intenta más tarde.")

@@ -5,6 +5,7 @@ import com.serpentia.BoardState;
 import com.serpentia.BoardUpdate;
 import com.serpentia.Point;
 import com.serpentia.repository.GameRepository;
+import com.serpentia.websocket.GameEvent;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,8 @@ public class GameService {
 
         for (int i = 0; i < 5; i++) board.spawnFruit();
         gameRepository.saveBoard(board);
-        ws.convertAndSend("/topic/game/" + roomId, new BoardUpdate(board));
+        System.out.println(roomId);
+        ws.convertAndSend("/topic/game/" + roomId, new com.serpentia.websocket.GameEvent("START", null, board, "¡El juego ha comenzado!"));
     }
 
     public void setDirection(String roomId, String player, String dir) {
@@ -60,6 +62,7 @@ public class GameService {
 
             updateBoard(board);
             gameRepository.saveBoard(board);
+            System.out.println(board);
             ws.convertAndSend("/topic/game/" + roomId, new BoardUpdate(board));
         }
     }
@@ -68,6 +71,7 @@ public class GameService {
         Map<String, Deque<Point>> snakes = b.getSnakePositions();
         Map<String, String> dirs = b.getSnakeDirections();
         Set<String> eliminated = new HashSet<>();
+        Set<String> ateFruit = new HashSet<>();
 
         Map<String, Point> newHeads = new HashMap<>();
         for (String p : snakes.keySet()) {
@@ -90,11 +94,13 @@ public class GameService {
             if (nh.getX() < 0 || nh.getX() >= b.getWidth()
                     || nh.getY() < 0 || nh.getY() >= b.getHeight()) {
                 eliminated.add(p);
+                ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("COLLISION", p, b, p + " chocó con el borde!"));
                 continue;
             }
             for (Deque<Point> other : snakes.values()) {
                 if (other.contains(nh)) {
                     eliminated.add(p);
+                    ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("COLLISION", p, b, p + " chocó con otra serpiente!"));
                     break;
                 }
             }
@@ -113,14 +119,19 @@ public class GameService {
 
             if (b.getFruits().remove(nh)) {
                 b.spawnFruit();
+                ateFruit.add(p);
+                ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("FRUIT", p, b, p + " comió una fruta!"));
             } else {
                 body.pollLast();
             }
         }
 
+        // Evento de actualización general
+        ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("UPDATE", null, b, null));
+
         if (snakes.size() <= 1) {
             b.setStatus("FINISHED");
-            ws.convertAndSend("/topic/game/" + b.getRoomId(), new BoardUpdate(b));
+            ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("END", null, b, "Juego terminado!"));
         }
     }
 }

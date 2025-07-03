@@ -9,12 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import com.serpentia.exeptions.SerpentiaException;
-
 import java.util.ArrayList;
-
+import com.serpentia.exeptions.SerpentiaException;
 /**
  * Servicio que maneja toda la lógica de negocio relacionada con los usuarios.
  * 

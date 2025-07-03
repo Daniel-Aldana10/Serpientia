@@ -4,9 +4,6 @@ import com.serpentia.dto.RoomDTO;
 import com.serpentia.repository.LobbyRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-
 import java.util.*;
 
 import com.serpentia.websocket.RoomEvent;

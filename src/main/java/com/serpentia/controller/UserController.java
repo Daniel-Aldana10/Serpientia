@@ -1,7 +1,6 @@
 package com.serpentia.controller;
 
 import com.serpentia.dto.UserStatistics;
-import com.serpentia.model.User;
 import com.serpentia.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
