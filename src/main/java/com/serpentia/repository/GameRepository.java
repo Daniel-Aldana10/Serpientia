@@ -33,4 +33,12 @@ public class GameRepository {
     public void deleteBoard(String roomId) {
         redis.delete(PREFIX + roomId);
     }
+    public void deleteAllGames(){
+        Set<String> keys = redis.keys(PREFIX + "*");
+        System.out.println("keys: " + keys);
+        if (keys != null && !keys.isEmpty()) {
+            redis.delete(keys);
+        }
+    }
+
 }

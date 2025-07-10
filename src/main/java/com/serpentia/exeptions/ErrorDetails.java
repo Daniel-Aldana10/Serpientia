@@ -1,4 +1,4 @@
-package com.serpentia.model.dto;
+package com.serpentia.exeptions;
 
 import lombok.Builder;
 import lombok.Data;

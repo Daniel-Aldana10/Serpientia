@@ -1,4 +1,4 @@
-package com.serpentia.config;
+package com.serpentia.websocket;
 
 import com.serpentia.security.AuthHandshakeInterceptor;
 import org.springframework.context.annotation.Configuration;

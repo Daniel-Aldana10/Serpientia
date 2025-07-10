@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/api-docs/swagger-config"
                         ).permitAll()
-                        .requestMatchers("/ws/**", "/ws/info/**").permitAll() // <-- permite acceso anónimo
+                        .requestMatchers("/ws/**", "/ws/info/**").permitAll()
+                        .requestMatchers("/api/game/ws/info/**").permitAll()// <-- permite acceso anónimo
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .httpBasic(Customizer.withDefaults())

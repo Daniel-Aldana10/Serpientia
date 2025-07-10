@@ -10,6 +10,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -38,20 +40,25 @@ public class GameService {
         for (int i = 0; i < 5; i++) board.spawnFruit();
         gameRepository.saveBoard(board);
         System.out.println(roomId);
-        ws.convertAndSend("/topic/game/" + roomId, new com.serpentia.websocket.GameEvent("START", null, board, "¡El juego ha comenzado!"));
+        ws.convertAndSend("/topic/game/" + roomId, new com.serpentia.websocket.GameEvent("START", null, board));
     }
 
     public void setDirection(String roomId, String player, String dir) {
+        System.out.println("[BACKEND] Recibido movimiento: roomId=" + roomId + ", player=" + player + ", dir=" + dir);
         BoardState board = gameRepository.getBoard(roomId);
         if (board != null && "IN_GAME".equals(board.getStatus())) {
             board.getSnakeDirections().put(player, dir);
             gameRepository.saveBoard(board);
+            System.out.println("[BACKEND] Dirección actualizada para " + player + ": " + dir);
+        } else {
+            System.out.println("[BACKEND] No se pudo actualizar dirección (sala no encontrada o no en juego)");
         }
     }
 
     @Scheduled(fixedRate = 100)
     public void gameLoop() {
         Set<String> keys = gameRepository.getAllGameKeys();
+
         if (keys == null) return;
 
         for (String key : keys) {
@@ -63,7 +70,7 @@ public class GameService {
             updateBoard(board);
             gameRepository.saveBoard(board);
             System.out.println(board);
-            ws.convertAndSend("/topic/game/" + roomId, new BoardUpdate(board));
+            ws.convertAndSend("/topic/game/" + roomId,  new com.serpentia.websocket.GameEvent("UPDATE", null, board));
         }
     }
 
@@ -94,13 +101,13 @@ public class GameService {
             if (nh.getX() < 0 || nh.getX() >= b.getWidth()
                     || nh.getY() < 0 || nh.getY() >= b.getHeight()) {
                 eliminated.add(p);
-                ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("COLLISION", p, b, p + " chocó con el borde!"));
+                ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("COLLISION", p, b));
                 continue;
             }
             for (Deque<Point> other : snakes.values()) {
                 if (other.contains(nh)) {
                     eliminated.add(p);
-                    ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("COLLISION", p, b, p + " chocó con otra serpiente!"));
+                    ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("COLLISION", p, b));
                     break;
                 }
             }
@@ -120,18 +127,23 @@ public class GameService {
             if (b.getFruits().remove(nh)) {
                 b.spawnFruit();
                 ateFruit.add(p);
-                ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("FRUIT", p, b, p + " comió una fruta!"));
+                ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("FRUIT", p, b));
             } else {
                 body.pollLast();
             }
         }
 
         // Evento de actualización general
-        ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("UPDATE", null, b, null));
+        ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("UPDATE", null, b));
 
         if (snakes.size() <= 1) {
             b.setStatus("FINISHED");
-            ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("END", null, b, "Juego terminado!"));
+            ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("END", null, b));
         }
+    }
+    public void deleteAllGames() {
+
+        gameRepository.deleteAllGames();
+
     }
 }

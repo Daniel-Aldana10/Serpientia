@@ -17,7 +17,7 @@ public class BoardState implements Serializable {
     private Map<String, String> snakeDirections = new HashMap<>(); // "UP","DOWN",...
     private List<Point> fruits = new ArrayList<>();
     //private List<PowerUp> powerUps = new ArrayList<>();
-    private String status = "WAITING"; // WAITING, IN_GAME, FINISHED
+    private String status; // WAITING, IN_GAME, FINISHED
 
     public void spawnFruit() {
         Random r = new Random();

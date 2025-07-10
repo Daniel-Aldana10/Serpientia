@@ -1,7 +1,7 @@
 package com.serpentia.config;
 
 import com.serpentia.exeptions.SerpentiaException;
-import com.serpentia.model.dto.ErrorDetails;
+import com.serpentia.exeptions.ErrorDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

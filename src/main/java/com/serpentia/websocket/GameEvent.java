@@ -12,5 +12,4 @@ public class GameEvent {
     private String type; // "COLLISION", "FRUIT", "START", "END", "UPDATE", etc.
     private String player; // jugador afectado (opcional)
     private BoardState board; // estado actual del tablero
-    private String message; // mensaje opcional para mostrar en el frontend
 } 
