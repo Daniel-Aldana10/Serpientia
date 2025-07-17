@@ -40,7 +40,6 @@ public class GameService {
         board.setRoomId(roomId);
         board.setStatus("IN_GAME");
 
-        // Colores predefinidos para las serpientes
         String[] colors = {"#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"};
         
         for (int i = 0; i < players.size(); i++) {
@@ -48,41 +47,30 @@ public class GameService {
             String color = colors[i % colors.length];
             Point initialPosition = new Point(0, i * 2);
             
-            // Agregar jugador usando el nuevo sistema
             board.addPlayer(playerId, color, initialPosition);
-            System.out.println("[DEBUG] Jugador agregado: " + playerId + " con color: " + color);
         }
 
-        System.out.println("[DEBUG] BoardState después de agregar jugadores:");
-        System.out.println("[DEBUG] - Jugadores en mapa: " + board.getPlayers().size());
-        System.out.println("[DEBUG] - SnakePositions:  " + board.getSnakePositions().size());
-        System.out.println("[DEBUG] - SnakeDirections:  " + board.getSnakeDirections().size());
 
-        // Asignar equipos automáticamente si es modo TEAM
         board.assignTeamsAutomatically();
 
         for (int i = 0; i < 5; i++) board.spawnFruit();
         gameRepository.saveBoard(board);
-        System.out.println(roomId);
+
         ws.convertAndSend("/topic/game/" + roomId, new com.serpentia.websocket.GameEvent("START", null, board));
     }
 
     public void setDirection(String roomId, String player, String dir) {
-        System.out.println("[BACKEND] Recibido movimiento: roomId=" + roomId + ", player=" + player + ", dir=" + dir);
-        BoardState board = gameRepository.getBoard(roomId);
+       BoardState board = gameRepository.getBoard(roomId);
         if (board != null && "IN_GAME".equals(board.getStatus())) {
-            // Reconstruir jugadores si es necesario
+
             board.reconstructPlayersIfNeeded();
             
             board.getSnakeDirections().put(player, dir);
             gameRepository.saveBoard(board);
-            System.out.println("[BACKEND] Dirección actualizada para " + player + ": " + dir);
-        } else {
-            System.out.println("[BACKEND] No se pudo actualizar dirección (sala no encontrada o no en juego)");
         }
     }
 
-    @Scheduled(fixedRate = 100)
+    @Scheduled(fixedRate = 200)
     public void gameLoop() {
         Set<String> keys = gameRepository.getAllGameKeys();
 
@@ -94,20 +82,13 @@ public class GameService {
 
             if (board == null || !"IN_GAME".equals(board.getStatus())) continue;
 
-            // Debug: verificar estado del board recuperado de Redis
+
             if (board.getPlayers().isEmpty() && !board.getSnakePositions().isEmpty()) {
-                System.out.println("[DEBUG] PROBLEMA: BoardState recuperado de Redis tiene snakePositions pero players está vacío");
-                System.out.println("[DEBUG] - RoomId: " + board.getRoomId());
-                System.out.println("[DEBUG] - SnakePositions:  " + board.getSnakePositions().keySet());
-                System.out.println("[DEBUG] - Players: " + board.getPlayers().keySet());
-               
-                // Reconstruir jugadores desde snakePositions
                 board.reconstructPlayersIfNeeded();
             }
 
             updateBoard(board);
             gameRepository.saveBoard(board);
-            System.out.println(board);
             ws.convertAndSend("/topic/game/" + roomId,  new GameEvent("UPDATE", null, board));
         }
     }
@@ -140,7 +121,7 @@ public class GameService {
                     || nh.getY() < 0 || nh.getY() >= b.getHeight()) {
                 eliminated.add(p);
                
-                // Publicar evento de eliminación
+
                 PlayerEliminatedEvent event = new PlayerEliminatedEvent(
                     p, b.getRoomId(), b
                         .getPlayerScore(p), b.getAlivePlayerCount() +1               );
@@ -153,7 +134,7 @@ public class GameService {
                 if (other.contains(nh)) {
                     eliminated.add(p);
                    
-                    // Publicar evento de eliminación
+
                     PlayerEliminatedEvent event = new PlayerEliminatedEvent(
                         p, b.getRoomId(), b.getPlayerScore(p), b.getAlivePlayerCount() + 1
                     );
@@ -167,7 +148,6 @@ public class GameService {
 
         for (String p : newHeads.keySet()) {
             if (eliminated.contains(p)) {
-                // Eliminar jugador usando el nuevo sistema
                 b.eliminatePlayer(p);
                 continue;
             }
@@ -180,9 +160,9 @@ public class GameService {
                 b.spawnFruit();
                 ateFruit.add(p);
                 
-                // Agregar puntaje al jugador (10 puntos por fruta)
+
                 b.addScoreToPlayer(p, 10);
-                // Si es modo TEAM, sumar puntos al equipo
+
                 if (b.getGameMode() == GameMode.TEAM) {
                     String teamId = b.getPlayerTeam(p);
                     if (teamId != null && b.getTeams().containsKey(teamId)) {
@@ -190,10 +170,10 @@ public class GameService {
                     }
                 }
 
-                // Enviar evento de fruta
+
                 ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("FRUIT", p, b));
                 
-                // Enviar evento de puntaje actualizado
+
                 List<PlayerDTO> playerDTOs = b.getPlayers().values().stream()
                         .map(PlayerDTO::new)
                         .toList();
@@ -204,13 +184,13 @@ public class GameService {
             }
         }
 
-        // Evento de actualización general
+
         ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("UPDATE", null, b));
 
         if (b.isGameFinished()) {
             b.setStatus("FINISHED");
             
-            // Publicar evento de fin de juego con todos los resultados
+
             List<GameFinishedEvent.PlayerResult> results = b.getPlayers().values().stream()
                 .map(player -> new GameFinishedEvent.PlayerResult(
                     player.getName(),

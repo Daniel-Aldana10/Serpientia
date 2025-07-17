@@ -49,7 +49,6 @@ public class GameController {
         if (board == null) {
             return ResponseEntity.notFound().build();
         }
-        System.out.println(board.getPlayers() +"no ignorar porfavor");
         GameStateDTO gameState = new GameStateDTO(board, board.getPlayers());
         return ResponseEntity.ok(gameState);
     }

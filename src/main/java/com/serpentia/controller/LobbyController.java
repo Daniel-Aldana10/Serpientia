@@ -48,7 +48,6 @@ public class LobbyController {
         )
     })
     public List<RoomDTO> getRooms() {
-        System.out.println(lobbyService.getAllRooms());
         return lobbyService.getAllRooms();
     }
 

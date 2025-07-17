@@ -34,12 +34,8 @@ public class GameStatsListener {
     public void handleGameFinished(GameFinishedEvent event) {
         System.out.println("Juego terminado en sala: " + event.getRoomId());
         
-        // Procesar todos los resultados del juego
+
         for (GameFinishedEvent.PlayerResult result : event.getResults()) {
-            System.out.println("Resultado - " + result.getUsername() + 
-                             " : " + result.getFinalScore() + " puntos, " +
-                         " posición " + result.getPosition() + 
-                        ", ganó: " + result.isWon());
             
             userService.updateUserStats(
                 result.getUsername(),
