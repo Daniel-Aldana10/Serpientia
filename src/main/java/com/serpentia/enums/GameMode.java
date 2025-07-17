@@ -1,5 +1,9 @@
 package com.serpentia.enums;
 
-public enum GameMode{
+/**
+ * Enumeración que define los diferentes modos de juego disponibles en Serpentia.
+ *
+ */
+public enum GameMode {
     COMPETITIVE, TEAM, COOPERATIVE
 }

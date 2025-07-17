@@ -72,7 +72,7 @@ public class AuthController {
             )
         ),
         @ApiResponse(
-            responseCode = "401", 
+            responseCode = "401",   
             description = "Credenciales inválidas",
             content = @Content(
                 mediaType = "application/json",
