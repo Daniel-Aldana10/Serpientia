@@ -1,6 +1,4 @@
 package com.serpentia.controller;
-
-import com.serpentia.dto.CreateRoomRequest;
 import com.serpentia.dto.RoomDTO;
 import com.serpentia.service.LobbyService;
 import io.swagger.v3.oas.annotations.Operation;

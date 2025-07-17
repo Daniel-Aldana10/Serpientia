@@ -9,9 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
-
+import com.serpentia.exeptions.SerpentiaException;
 /**
  * Servicio que maneja toda la lógica de negocio relacionada con los usuarios.
  * 
@@ -51,7 +50,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+                .orElseThrow(() -> new SerpentiaException("Usuario no encontrado: " + username, "No se encontró usuario para esas credenciales.", org.springframework.http.HttpStatus.NOT_FOUND));
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
@@ -68,22 +67,22 @@ public class UserService implements UserDetailsService {
     public void registerUser(RegisterRequest request) {
         // Validar que el username no exista
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("El nombre de usuario ya está en uso");
+            throw new SerpentiaException("El nombre de usuario ya está en uso", "Verifica los datos enviados, algo no está bien.", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
 
         // Validar que el email no exista
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("El email ya está registrado");
+            throw new SerpentiaException("El email ya está registrado", "Verifica los datos enviados, algo no está bien.", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
 
         // Validar longitud del username (3-15 caracteres)
         if (request.getUsername().length() < 3 || request.getUsername().length() > 15) {
-            throw new RuntimeException("El nombre de usuario debe tener entre 3 y 15 caracteres");
+            throw new SerpentiaException("El nombre de usuario debe tener entre 3 y 15 caracteres", "Verifica los datos enviados, algo no está bien.", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
 
         // Validar que el username sea alfanumérico
         if (!request.getUsername().matches("^[a-zA-Z0-9]+$")) {
-            throw new RuntimeException("El nombre de usuario solo puede contener letras y números");
+            throw new SerpentiaException("El nombre de usuario solo puede contener letras y números", "Verifica los datos enviados, algo no está bien.", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
 
         User user = new User(request.getUsername(), request.getEmail(), passwordEncoder.encode(request.getPassword()));
@@ -100,7 +99,7 @@ public class UserService implements UserDetailsService {
      */
     public void updateUserStats(String username, int points, boolean won) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+                .orElseThrow(() -> new SerpentiaException("Usuario no encontrado: " + username, "No se encontró usuario para esas credenciales.", org.springframework.http.HttpStatus.NOT_FOUND));
 
         user.setGamesPlayed(user.getGamesPlayed() + 1);
         user.setTotalPoints(user.getTotalPoints() + points);
@@ -125,7 +124,7 @@ public class UserService implements UserDetailsService {
      */
     public UserStatistics getStatsUser(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+                .orElseThrow(() -> new SerpentiaException("Usuario no encontrado: " + username, "No se encontró usuario para esas credenciales.", org.springframework.http.HttpStatus.NOT_FOUND));
         
         // Calcular ratio de victorias (evitar división por cero)
         float ratioWin = user.getGamesPlayed() > 0 ? 

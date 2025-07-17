@@ -1,6 +1,7 @@
-package com.serpentia.config;
+package com.serpentia.websocket;
 
 import com.serpentia.security.AuthHandshakeInterceptor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -18,7 +19,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
+    @Value("${URL_FRONT}")
+    private String url;
     private final AuthHandshakeInterceptor authHandshakeInterceptor;
 
     /**
@@ -33,31 +35,28 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     /**
      * Registra los endpoints de WebSocket.
      * 
-     * <p>Configura el endpoint principal "/ws" con las siguientes características:</p>
-     * <ul>
-     *   <li>Soporte para SockJS para compatibilidad con navegadores</li>
-     *   <li>Interceptor de autenticación para validar tokens JWT</li>
-     *   <li>CORS configurado para permitir conexiones desde el frontend</li>
-     * </ul>
+     * <Configura el endpoint principal "/ws" con las siguientes características:
+     *
+     * Soporte para SockJS para compatibilidad con navegadores
+     * Interceptor de autenticación para validar tokens JWT
+     * CORS configurado para permitir conexiones desde el frontend
+     *
      * 
      * @param registry Registro de endpoints STOMP
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .addInterceptors(authHandshakeInterceptor) // Interceptor de autenticación
-                .setAllowedOrigins("http://localhost:5173") // CORS para frontend
-                .withSockJS(); // Soporte para SockJS
+                .addInterceptors(authHandshakeInterceptor)
+                .setAllowedOrigins(url)
+                .withSockJS();
     }
 
     /**
      * Configura el broker de mensajes.
-     * 
-     * <p>Configura un broker simple que permite:</p>
-     * <ul>
-     *   <li>Enviar mensajes a topics con el prefijo "/topic"</li>
-     *   <li>Recibir mensajes de aplicaciones con el prefijo "/app"</li>
-     * </ul>
+     * Configura un broker simple que permite:
+     * Enviar mensajes a topics con el prefijo "/topic"
+     * Recibir mensajes de aplicaciones con el prefijo "/app"<
      * 
      * @param registry Registro de configuración del broker
      */
