@@ -1,6 +1,7 @@
 package com.serpentia.websocket;
 
 import com.serpentia.security.AuthHandshakeInterceptor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -18,7 +19,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
+    @Value("${URL_FRONT}")
+    private String url;
     private final AuthHandshakeInterceptor authHandshakeInterceptor;
 
     /**
@@ -46,8 +48,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .addInterceptors(authHandshakeInterceptor)
-                .setAllowedOrigins("http://localhost:5173")
-                .withSockJS(); // Soporte para SockJS
+                .setAllowedOrigins(url)
+                .withSockJS();
     }
 
     /**

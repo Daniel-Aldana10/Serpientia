@@ -8,15 +8,16 @@ import java.util.*;
 
 import com.serpentia.websocket.RoomEvent;
 import com.serpentia.exeptions.SerpentiaException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Servicio que maneja toda la lógica de negocio relacionada con las salas de juego.
- * 
+ *
  * <p>Este servicio utiliza Redis para almacenar las salas en tiempo real y proporciona
  * funcionalidades para crear, gestionar y eliminar salas de juego. También se encarga
  * de enviar notificaciones en tiempo real a través de WebSocket cuando ocurren cambios
  * en las salas.</p>
- * 
+ *
  * <p>Las salas se almacenan en Redis con el prefijo "room:" para facilitar su gestión
  * y búsqueda.</p>
  */
@@ -25,18 +26,20 @@ public class LobbyService {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final LobbyRepository lobbyRepository;
-    
+    private final PresenceService presenceService;
+
 
 
     /**
      * Constructor que inyecta las dependencias necesarias.
-     * 
+     *
      * @param lobbyRepository Repositorio de las salas
      * @param messagingTemplate Template para envío de mensajes WebSocket
      */
-    public LobbyService(LobbyRepository lobbyRepository, SimpMessagingTemplate messagingTemplate) {
+    public LobbyService(LobbyRepository lobbyRepository, SimpMessagingTemplate messagingTemplate, PresenceService presenceService) {
         this.lobbyRepository = lobbyRepository;
         this.messagingTemplate = messagingTemplate;
+        this.presenceService = presenceService;
     }
 
     /**
@@ -54,6 +57,7 @@ public class LobbyService {
                 players.add(room.getHost());
                 room.setCurrentPlayers(players);
                 messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("CREATED", room));
+                presenceService.setUserRoom(room.getHost(), room.getRoomId());
             }
         }
         lobbyRepository.saveRoom(room);
@@ -62,7 +66,7 @@ public class LobbyService {
 
     /**
      * Obtiene una sala específica por su ID.
-     * 
+     *
      * @param roomId Identificador único de la sala
      * @return Sala encontrada o null si no existe
      */
@@ -72,7 +76,7 @@ public class LobbyService {
 
     /**
      * Obtiene todas las salas disponibles en el sistema.
-     * 
+     *
      * @return Lista de todas las salas activas
      */
     public List<RoomDTO> getAllRooms() {
@@ -117,8 +121,10 @@ public class LobbyService {
         if (room.getCurrentPlayers().size() >= room.getMaxPlayers()) {
             room.setFull(true);
         }
-        lobbyRepository.saveRoom(room);
         messagingTemplate.convertAndSend("/topic/lobby", new com.serpentia.websocket.RoomEvent("UPDATED", room));
+        lobbyRepository.saveRoom(room);
+        // Guardar relación usuario-sala en Redis
+        presenceService.setUserRoom(player, roomId);
     }
 
     /**
@@ -136,24 +142,27 @@ public class LobbyService {
             throw new SerpentiaException("El usuario no está en la sala", "No formas parte de la sala.", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
         room.getCurrentPlayers().remove(player);
-        
+
         // Transferir host si el host sale y hay otros jugadores
         if(room.getHost().equals(player) && room.getCurrentPlayers().size() >= 1){
-
             room.setHost(room.getCurrentPlayers().get(0));
         } else if (room.getCurrentPlayers().isEmpty()) {
             // Eliminar sala si queda vacía
             deleteRoom(room.getHost(), roomId);
             messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("DELETED", room));
+            // Eliminar relación usuario-sala en Redis
+            presenceService.removeUserRoom(player);
             return;
         }
-        
+
         // Actualizar estado de sala llena
         if (room.getCurrentPlayers().size() < room.getMaxPlayers()) {
             room.setFull(false);
         }
         lobbyRepository.saveRoom(room);
         messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("UPDATED", room));
+        // Eliminar relación usuario-sala en Redis
+        presenceService.removeUserRoom(player);
     }
 
     public void deleteAllRooms() {

@@ -26,12 +26,37 @@ public class AuthHandshakeInterceptor implements HandshakeInterceptor {
                                    Map<String, Object> attributes) {
         String uri = request.getURI().toString();
 
+        // Extraer token
+        String token = null;
         if (uri.contains("token=")) {
-            String token = uri.substring(uri.indexOf("token=") + 6);
+            int tokenStart = uri.indexOf("token=") + 6;
+            int tokenEnd = uri.indexOf('&', tokenStart);
+            if (tokenEnd == -1) {
+                token = uri.substring(tokenStart);
+            } else {
+                token = uri.substring(tokenStart, tokenEnd);
+            }
+        }
 
+        // Extraer roomId
+        String roomId = null;
+        if (uri.contains("roomId=")) {
+            int roomStart = uri.indexOf("roomId=") + 7;
+            int roomEnd = uri.indexOf('&', roomStart);
+            if (roomEnd == -1) {
+                roomId = uri.substring(roomStart);
+            } else {
+                roomId = uri.substring(roomStart, roomEnd);
+            }
+        }
+
+        if (token != null) {
             try {
                 String username = jwtUtil.extractUserName(token);
                 attributes.put("username", username);
+                if (roomId != null) {
+                    attributes.put("roomId", roomId);
+                }
                 return true;
             } catch (Exception e) {
                 System.out.println("Token inválido: " + e.getMessage());

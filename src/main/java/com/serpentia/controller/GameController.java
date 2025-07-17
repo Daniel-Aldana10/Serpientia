@@ -1,5 +1,7 @@
 package com.serpentia.controller;
 
+import com.serpentia.BoardState;
+import com.serpentia.dto.GameStateDTO;
 import com.serpentia.dto.RoomDTO;
 import com.serpentia.service.GameService;
 import com.serpentia.service.LobbyService;
@@ -31,20 +33,24 @@ public class GameController {
         gameService.initRoom(roomId, room.getCurrentPlayers());
         return ResponseEntity.ok().build();
     }
-    /*
-    // ✅ CORREGIDO: Usar @DestinationVariable en lugar de @PathVariable
-    @MessageMapping("/room/{roomId}/move")
-    public void onMove(@DestinationVariable String roomId,
-                       @Payload Map<String, String> payload) {
-        String player = payload.get("player");
-        String dir = payload.get("direction");
-        System.out.println("Recibido movimiento: " + player + " -> " + dir + " en sala " + roomId);
-
-        gameService.setDirection(roomId, player, dir);
-    }
-    */
+  
     @DeleteMapping("/rooms/games")
     public void deleteAllGames() {
         gameService.deleteAllGames();
+    }
+    
+    @GetMapping("/state/{roomId}")
+    @Operation(
+        summary = "Obtener estado del juego",
+        description = "Retorna el estado actual del juego incluyendo jugadores y puntajes"
+    )
+    public ResponseEntity<GameStateDTO> getGameState(@PathVariable String roomId) {
+        BoardState board = gameService.getBoardState(roomId);
+        if (board == null) {
+            return ResponseEntity.notFound().build();
+        }
+        System.out.println(board.getPlayers() +"no ignorar porfavor");
+        GameStateDTO gameState = new GameStateDTO(board, board.getPlayers());
+        return ResponseEntity.ok(gameState);
     }
 }
