@@ -1,7 +1,7 @@
 package com.serpentia.dto;
 
 import com.serpentia.Point;
-import lombok.AllArgsConstructor;
+import com.serpentia.model.Player;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -49,7 +49,7 @@ public class PlayerDTO {
     /**
      * Constructor que convierte un Player a PlayerDTO
      */
-    public PlayerDTO(com.serpentia.model.Player player) {
+    public PlayerDTO(Player player) {
         this.name = player.getName();
         this.color = player.getColor();
         this.direction = player.getDirection();
@@ -59,16 +59,5 @@ public class PlayerDTO {
         // Convertir Deque a List para el frontend
         this.snake = new ArrayList<>(player.getSnake());
     }
-    
-    /**
-     * Constructor con parámetros básicos
-     */
-    public PlayerDTO(String name, String color, List<Point> snake, String direction, int score, boolean alive) {
-        this.name = name;
-        this.color = color;
-        this.snake = snake;
-        this.direction = direction;
-        this.score = score;
-        this.alive = alive;
-    }
+
 } 

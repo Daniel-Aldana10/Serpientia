@@ -8,7 +8,6 @@ import java.util.Optional;
 
 /**
  * Repositorio para el acceso a datos de usuarios.
- * 
  * Esta interfaz extiende {@link JpaRepository} para proporcionar operaciones
  * CRUD básicas y métodos personalizados para buscar usuarios por diferentes
  * criterios.

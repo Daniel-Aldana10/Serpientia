@@ -2,7 +2,7 @@ package com.serpentia.service;
 
 
 import com.serpentia.BoardState;
-import com.serpentia.BoardUpdate;
+
 import com.serpentia.Point;
 import com.serpentia.model.Player;
 import com.serpentia.repository.GameRepository;
@@ -17,8 +17,6 @@ import com.serpentia.websocket.PlayerEliminatedEvent;
 import com.serpentia.websocket.GameFinishedEvent;
 import java.util.stream.Collectors;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.*;
 import com.serpentia.enums.GameMode;
 
@@ -28,35 +26,44 @@ public class GameService {
     private final GameRepository gameRepository;
     private final SimpMessagingTemplate ws;
     private final ApplicationEventPublisher eventPublisher;
-
+    private final String topic = "/topic/game/";
     public GameService(GameRepository gameRepository, SimpMessagingTemplate ws, ApplicationEventPublisher eventPublisher) {
         this.gameRepository = gameRepository;
         this.ws = ws;
         this.eventPublisher = eventPublisher;
     }
 
-    public void initRoom(String roomId, List<String> players) {
+    /**
+     * Asigna colores a los jugadores según el índice
+     * @param playerIndex Índice del jugador (0-based)
+     * @return Color asignado al jugador en formato hexadecimal
+     */
+    private String assignPlayerColor(int playerIndex) {
+
+        String[] teamColors = {"#FF0000", "#00FF00", "#0000FF", "#FFFF00"};
+        return teamColors[playerIndex % teamColors.length];
+
+    }
+
+    public void initRoom(String roomId, List<String> players, GameMode gameMode) {
         BoardState board = new BoardState();
         board.setRoomId(roomId);
         board.setStatus("IN_GAME");
+        board.setGameMode(gameMode);
 
-        String[] colors = {"#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"};
-        
         for (int i = 0; i < players.size(); i++) {
             String playerId = players.get(i);
-            String color = colors[i % colors.length];
+            String color = assignPlayerColor(i);
             Point initialPosition = new Point(0, i * 2);
-            
             board.addPlayer(playerId, color, initialPosition);
         }
-
-
+        // Asignar equipos automáticamente si es modo TEAM
         board.assignTeamsAutomatically();
 
         for (int i = 0; i < 5; i++) board.spawnFruit();
         gameRepository.saveBoard(board);
-
-        ws.convertAndSend("/topic/game/" + roomId, new com.serpentia.websocket.GameEvent("START", null, board));
+        System.out.println(roomId);
+        ws.convertAndSend(topic + roomId, new com.serpentia.websocket.GameEvent("START", null, board));
     }
 
     public void setDirection(String roomId, String player, String dir) {
@@ -89,7 +96,8 @@ public class GameService {
 
             updateBoard(board);
             gameRepository.saveBoard(board);
-            ws.convertAndSend("/topic/game/" + roomId,  new GameEvent("UPDATE", null, board));
+            System.out.println(board);
+            ws.convertAndSend(topic + roomId,  new GameEvent("UPDATE", null, board));
         }
     }
 
@@ -127,7 +135,7 @@ public class GameService {
                         .getPlayerScore(p), b.getAlivePlayerCount() +1               );
                 eventPublisher.publishEvent(event);
                 
-                ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("COLLISION", p, b));
+                ws.convertAndSend(topic + b.getRoomId(), new GameEvent("COLLISION", p, b));
                 continue;
             }
             for (Deque<Point> other : snakes.values()) {
@@ -140,7 +148,7 @@ public class GameService {
                     );
                     eventPublisher.publishEvent(event);
                    
-                    ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("COLLISION", p, b));
+                    ws.convertAndSend(topic + b.getRoomId(), new GameEvent("COLLISION", p, b));
                     break;
                 }
             }
@@ -171,13 +179,13 @@ public class GameService {
                 }
 
 
-                ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("FRUIT", p, b));
+                ws.convertAndSend(topic + b.getRoomId(), new GameEvent("FRUIT", p, b));
                 
 
                 List<PlayerDTO> playerDTOs = b.getPlayers().values().stream()
                         .map(PlayerDTO::new)
                         .toList();
-                ws.convertAndSend("/topic/game/" + b.getRoomId(),
+                ws.convertAndSend(topic + b.getRoomId(),
                     new ScoreEvent("SCORE_UPDATE", playerDTOs));
             } else {
                 body.pollLast();
@@ -185,7 +193,7 @@ public class GameService {
         }
 
 
-        ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("UPDATE", null, b));
+        ws.convertAndSend(topic + b.getRoomId(), new GameEvent("UPDATE", null, b));
 
         if (b.isGameFinished()) {
             b.setStatus("FINISHED");
@@ -203,7 +211,8 @@ public class GameService {
             GameFinishedEvent gameFinishedEvent = new GameFinishedEvent(b.getRoomId(), results);
             eventPublisher.publishEvent(gameFinishedEvent);
             
-            ws.convertAndSend("/topic/game/" + b.getRoomId(), new GameEvent("END", null, b));
+            ws.convertAndSend(topic + b.getRoomId(), new GameEvent("END", null, b));
+            gameRepository.deleteBoard(b.getRoomId());
         }
     }
     public void deleteAllGames() {
@@ -212,7 +221,7 @@ public class GameService {
     
     /**
      * Obtiene el estado del tablero para una sala específica
-     * @param roomId ID de la sala
+     * @param roomId iD de la sala
      * @return Estado del tablero o null si no existe
      */
     public BoardState getBoardState(String roomId) {

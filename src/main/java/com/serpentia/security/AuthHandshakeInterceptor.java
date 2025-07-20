@@ -66,7 +66,9 @@ public class AuthHandshakeInterceptor implements HandshakeInterceptor {
 
         return false;
     }
-
+    /*
+     * No es necesario de realizar
+     */
     @Override
     public void afterHandshake(ServerHttpRequest request,
                                ServerHttpResponse response,

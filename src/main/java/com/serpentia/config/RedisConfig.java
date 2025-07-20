@@ -9,7 +9,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Configuración de Redis para el sistema.
- * 
  * Esta clase configura el template de Redis que se utiliza para almacenar
  * las salas de juego en tiempo real. La configuración incluye serialización
  * personalizada para manejar objetos complejos como RoomDTO.
@@ -20,7 +19,6 @@ public class RedisConfig {
 
     /**
      * Configura el template de Redis para operaciones de cache.
-     * 
      * Este bean configura cómo se serializan y deserializan los objetos
      * almacenados en Redis. La configuración está optimizada para el almacenamiento
      * de salas de juego con sus propiedades complejas.<
