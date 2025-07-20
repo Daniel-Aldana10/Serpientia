@@ -5,7 +5,7 @@ Serpentia es un juego de serpientes multiplayer desarrollado en Spring Boot con 
 ## 🎮 Características
 
 - **Modo Competitivo**: Todos contra todos
-- **Modo por Equipos**: 4 jugadores, 2pos de 2 jugadores
+- **Modo por Equipos**: 4 jugadores, 2 equipos de 2 jugadores
 - **Comunicación en tiempo real** via WebSocket
 - **Sistema de puntuación** y estadísticas
 - **Autenticación JWT**

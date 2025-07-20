@@ -14,7 +14,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpMethod;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
 
@@ -23,8 +22,11 @@ import java.util.List;
 public class SecurityConfig {
     @Value("${URL_FRONT}")
     private String url;
-    @Autowired
-    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
+    public SecurityConfig(CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+    }
 
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

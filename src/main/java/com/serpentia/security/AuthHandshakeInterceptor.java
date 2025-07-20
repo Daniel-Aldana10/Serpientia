@@ -59,15 +59,16 @@ public class AuthHandshakeInterceptor implements HandshakeInterceptor {
                 }
                 return true;
             } catch (Exception e) {
-                System.out.println("Token inválido: " + e.getMessage());
                 return false;
             }
         }
 
-        System.out.println("No se encontró token en la URL");
+
         return false;
     }
-
+    /*
+     * No es necesario de realizar
+     */
     @Override
     public void afterHandshake(ServerHttpRequest request,
                                ServerHttpResponse response,

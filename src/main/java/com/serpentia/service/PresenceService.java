@@ -7,10 +7,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class PresenceService {
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+
+    private final StringRedisTemplate redisTemplate;
 
     private static final String USER_ROOM_PREFIX = "user_room:";
+
+    public PresenceService(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     /**
      * Asocia un usuario a una sala en Redis.

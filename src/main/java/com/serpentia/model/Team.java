@@ -50,7 +50,8 @@ public class Team {
         this.playerIds = playerIds;
         this.teamScore = 0;
         this.eliminated = false;
-        this.teamColor = teamId.equals("team1") ? "#FF0000" : "#0000FF"; // Rojo para equipo 1, Azul para equipo 2
+        // Equipo 1: Azul, Equipo 2: Negro (consistente con la lógica de colores de jugadores)
+        this.teamColor = teamId.equals("team1") ? "blue" : "black";
     }
     
     /**
@@ -61,13 +62,7 @@ public class Team {
         this.teamScore += points;
     }
     
-    /**
-     * Marca al equipo como eliminado
-     */
-    public void eliminate() {
-        this.eliminated = true;
-    }
-    
+
     /**
      * Verifica si el equipo tiene jugadores vivos
      * @param alivePlayers Lista de jugadores vivos

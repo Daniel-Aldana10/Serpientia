@@ -39,7 +39,6 @@ public class UserService implements UserDetailsService {
 
     /**
      * Carga los detalles de un usuario por su nombre de usuario.
-     * 
      * Este método es requerido por Spring Security para la autenticación.
      * Convierte la entidad User en un UserDetails de Spring Security.
      * 

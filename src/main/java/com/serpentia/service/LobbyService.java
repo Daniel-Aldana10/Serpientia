@@ -8,7 +8,6 @@ import java.util.*;
 
 import com.serpentia.websocket.RoomEvent;
 import com.serpentia.exeptions.SerpentiaException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Servicio que maneja toda la lógica de negocio relacionada con las salas de juego.

@@ -1,14 +1,10 @@
 package com.serpentia.dto;
 
 import com.serpentia.Point;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import com.serpentia.model.Team;
 import com.serpentia.enums.GameMode;
 
 /**
@@ -88,16 +84,5 @@ public class GameStateDTO {
                 .toList();
         }
     }
-    
-    /**
-     * Constructor con parámetros básicos
-     */
-    public GameStateDTO(String roomId, int width, int height, List<PlayerDTO> players, List<Point> fruits, String status) {
-        this.roomId = roomId;
-        this.width = width;
-        this.height = height;
-        this.players = players;
-        this.fruits = fruits;
-        this.status = status;
-    }
+
 } 
