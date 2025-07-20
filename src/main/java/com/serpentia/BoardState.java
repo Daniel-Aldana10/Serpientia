@@ -27,7 +27,10 @@ public class BoardState implements Serializable {
     private String status; // WAITING, IN_GAME, FINISHED
     private GameMode gameMode = GameMode.COMPETITIVE; // Modo de juego por defecto
     private int targetScore = 100; // Puntuación objetivo para ganar
-
+    @JsonIgnore
+    private final String team1s = "team1";
+    @JsonIgnore
+    private final String team2s = "team2";
     @JsonIgnore
     public void spawnFruit() {
         Random r = new Random();
@@ -140,11 +143,7 @@ public class BoardState implements Serializable {
         return player != null ? player.getScore() : 0;
     }
 
-    /**
-     * Obtiene todos los jugadores (vivos y eliminados)
-     * @return Mapa de todos los jugadores
-     */
-    @JsonIgnore
+    // Elimino @JsonIgnore para que players se serialice correctamente
     public Map<String, Player> getPlayers() {
         return players;
     }
@@ -157,7 +156,7 @@ public class BoardState implements Serializable {
     @JsonIgnore
     public void reconstructPlayersIfNeeded() {
         if (players.isEmpty() && !snakePositions.isEmpty()) {
-            String[] colors = {"#FF000,#000#00FF,#FFFF0, #FF00FFF"};
+            String[] colors = {"red", "green", "blue", "yellow", "magenta", "cyan"};
             int colorIndex = 0;
             
             for (String playerId : snakePositions.keySet()) {
@@ -179,12 +178,10 @@ public class BoardState implements Serializable {
                     
                     players.put(playerId, player);
                     colorIndex++;
-                    
-                    System.out.println("[DEBUG] Jugador reconstruido: " + playerId + " con color: " + color);
+
                 }
             }
-            
-            System.out.println("[DEBUG] Reconstrucción completada. Jugadores: " + players.size());
+
         }
     }
 
@@ -197,22 +194,18 @@ public class BoardState implements Serializable {
             List<String> playerIds = new ArrayList<>(players.keySet());
 
             // Equipo 1: jugadores 0 y 1
-            Team team1 = new Team("team1", Arrays.asList(playerIds.get(0), playerIds.get(1)));
+            Team team1 = new Team(team1s, Arrays.asList(playerIds.get(0), playerIds.get(1)));
             // Equipo 2: jugadores 2 y 3
-            Team team2 = new Team("team2", Arrays.asList(playerIds.get(2), playerIds.get(3)));
+            Team team2 = new Team(team2s, Arrays.asList(playerIds.get(2), playerIds.get(3)));
 
-            teams.put("team1", team1);
-            teams.put("team2", team2);
+            teams.put(team1s, team1);
+            teams.put(team2s, team2);
 
             // Mapear jugadores a equipos
             for (int i = 0; i < 4; i++) {
-                String teamId = i < 2 ? "team1" : "team2";
+                String teamId = i < 2 ? team1s : team2s;
                 playerToTeam.put(playerIds.get(i), teamId);
             }
-
-            System.out.println("[DEBUG] Equipos asignados automáticamente:");
-            System.out.println("[DEBUG] - Equipo 1: " + team1.getPlayerIds());
-            System.out.println("[DEBUG] - Equipo 2: " + team2.getPlayerIds());
         }
     }
     

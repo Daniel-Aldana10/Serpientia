@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
 public class LobbyRepository {
@@ -35,7 +34,7 @@ public class LobbyRepository {
         return keys.stream()
                 .map(k -> (RoomDTO) redisTemplate.opsForValue().get(k))
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void deleteRoom(String roomId) {
