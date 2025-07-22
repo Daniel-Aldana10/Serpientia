@@ -22,8 +22,6 @@ public class GameWebSocketController {
                        @Payload Map<String, String> payload) {
         String player = payload.get("player");
         String dir = payload.get("direction");
-
-
         gameService.setDirection(roomId, player, dir);
     }
 

@@ -91,4 +91,17 @@ public class Player implements Serializable {
         this.alive = false;
     }
 
+    /**
+     * Obtiene la dirección actual del jugador
+     */
+    public String getDirection() {
+        return this.direction;
+    }
+
+    /**
+     * Establece la dirección actual del jugador
+     */
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
 } 

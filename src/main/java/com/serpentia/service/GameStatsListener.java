@@ -26,9 +26,6 @@ public class GameStatsListener {
      */
     @EventListener
     public void handleGameFinished(GameFinishedEvent event) {
-        System.out.println("Juego terminado en sala: " + event.getRoomId());
-        
-
         for (GameFinishedEvent.PlayerResult result : event.getResults()) {
             
             userService.updateUserStats(

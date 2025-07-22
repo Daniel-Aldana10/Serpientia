@@ -26,7 +26,7 @@ public class GameController {
         if (room == null) {
             return;
         }
-        gameService.initRoom(roomId, room.getCurrentPlayers(), room.getGameMode());
+        gameService.initRoom(roomId, room.getCurrentPlayers(), room.getGameMode(), room.getTargetScore());
     }
   
     @DeleteMapping("/rooms/games")

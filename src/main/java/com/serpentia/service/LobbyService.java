@@ -26,6 +26,7 @@ public class LobbyService {
     private final SimpMessagingTemplate messagingTemplate;
     private final LobbyRepository lobbyRepository;
     private final PresenceService presenceService;
+    private final String lobby = "/topic/lobby";
 
 
 
@@ -55,7 +56,7 @@ public class LobbyService {
                 List<String> players = new ArrayList<>();
                 players.add(room.getHost());
                 room.setCurrentPlayers(players);
-                messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("CREATED", room));
+                messagingTemplate.convertAndSend(lobby, new RoomEvent("CREATED", room));
                 presenceService.setUserRoom(room.getHost(), room.getRoomId());
             }
         }
@@ -120,7 +121,7 @@ public class LobbyService {
         if (room.getCurrentPlayers().size() >= room.getMaxPlayers()) {
             room.setFull(true);
         }
-        messagingTemplate.convertAndSend("/topic/lobby", new com.serpentia.websocket.RoomEvent("UPDATED", room));
+        messagingTemplate.convertAndSend(lobby, new com.serpentia.websocket.RoomEvent("UPDATED", room));
         lobbyRepository.saveRoom(room);
         // Guardar relación usuario-sala en Redis
         presenceService.setUserRoom(player, roomId);
@@ -148,7 +149,7 @@ public class LobbyService {
         } else if (room.getCurrentPlayers().isEmpty()) {
             // Eliminar sala si queda vacía
             deleteRoom(room.getHost(), roomId);
-            messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("DELETED", room));
+            messagingTemplate.convertAndSend(lobby, new RoomEvent("DELETED", room));
             // Eliminar relación usuario-sala en Redis
             presenceService.removeUserRoom(player);
             return;
@@ -159,14 +160,14 @@ public class LobbyService {
             room.setFull(false);
         }
         lobbyRepository.saveRoom(room);
-        messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("UPDATED", room));
+        messagingTemplate.convertAndSend(lobby, new RoomEvent("UPDATED", room));
         // Eliminar relación usuario-sala en Redis
         presenceService.removeUserRoom(player);
     }
 
     public void deleteAllRooms() {
         if(lobbyRepository.deleteAllRooms()) {
-            messagingTemplate.convertAndSend("/topic/lobby", new RoomEvent("CLEARED", null));
+            messagingTemplate.convertAndSend(lobby, new RoomEvent("CLEARED", null));
         }
     }
 }
