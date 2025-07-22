@@ -25,5 +25,5 @@ public class RoomDTO implements Serializable {
     private int maxPlayers;
     private List<String> currentPlayers;
     private boolean isFull;
-    private boolean powerups;
+    private int targetScore;
 }

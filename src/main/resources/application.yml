@@ -17,39 +17,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-  redis:
-    port: ${REDIS_PORT}
-    username: ${REDIS_USERNAME}  # Usualmente 'default'
-    password: ${REDIS_PASSWORD}
-    database: 0
-  cache:
-    type: redis
   data:
     redis:
       host: ${REDIS_ADDR}
-      port: 11034
+      port: 6380
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
       database: 0
+      ssl:
+        enabled: true
     cache:
       type: redis
 
-
-# Configuración de OpenAPI/Swagger
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
-    tags-sorter: alpha
-  info:
-    title: Serpentia API
-    description: API para el juego multijugador Serpentia
-    version: 1.0.0
-    contact:
-      name: Equipo Serpentia
-      email: support@serpentia.com
-    license:
-      name: MIT License
-      url: https://opensource.org/licenses/MIT
