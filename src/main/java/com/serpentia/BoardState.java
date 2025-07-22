@@ -23,17 +23,21 @@ public class BoardState implements Serializable {
     private Map<String, Team> teams = new HashMap<>();
     private Map<String, String> playerToTeam = new HashMap<>();
     private List<Point> fruits = new ArrayList<>();
-    //private List<PowerUp> powerUps = new ArrayList<>();
     private String status; // WAITING, IN_GAME, FINISHED
     private GameMode gameMode = GameMode.COMPETITIVE; // Modo de juego por defecto
-    private int targetScore = 100; // Puntuación objetivo para ganar
+    private int targetScore; // Puntuación objetivo para ganar
     @JsonIgnore
-    private final String team1s = "team1";
+    private static final String team1s = "team1";
     @JsonIgnore
-    private final String team2s = "team2";
+    private static final String team2s = "team2";
+    @JsonIgnore
+    private static final Random r = new Random();
+
+
+
+
     @JsonIgnore
     public void spawnFruit() {
-        Random r = new Random();
         while (true) {
             Point candidate = new Point(r.nextInt(width), r.nextInt(height));
             boolean collision = snakePositions.values().stream()

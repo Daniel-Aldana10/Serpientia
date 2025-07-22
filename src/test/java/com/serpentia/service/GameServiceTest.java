@@ -2,7 +2,6 @@ package com.serpentia.service;
 
 import com.serpentia.BoardState;
 import com.serpentia.enums.GameMode;
-import com.serpentia.model.Player;
 import com.serpentia.repository.GameRepository;
 import com.serpentia.websocket.GameEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -39,7 +37,7 @@ class GameServiceTest {
     void testInitRoom_createsBoardAndSendsEvent() {
         String roomId = "room1";
         var players = Arrays.asList("player1", "player2");
-        gameService.initRoom(roomId, players, GameMode.COMPETITIVE);
+        gameService.initRoom(roomId, players, GameMode.COMPETITIVE, 100);
         verify(gameRepository, times(1)).saveBoard(any(BoardState.class));
         verify(ws, atLeastOnce()).convertAndSend(contains(roomId), any(GameEvent.class));
     }
