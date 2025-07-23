@@ -1,6 +1,6 @@
 package com.serpentia.websocket;
 
-import com.serpentia.BoardState;
+import com.serpentia.model.BoardState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

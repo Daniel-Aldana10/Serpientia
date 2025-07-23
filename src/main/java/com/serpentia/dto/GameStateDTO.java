@@ -1,6 +1,7 @@
 package com.serpentia.dto;
 
-import com.serpentia.Point;
+import com.serpentia.model.Point;
+import com.serpentia.model.BoardState;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
@@ -63,7 +64,7 @@ public class GameStateDTO {
     /**
      * Constructor que convierte un BoardState a GameStateDTO
      */
-    public GameStateDTO(com.serpentia.BoardState boardState, Map<String, com.serpentia.model.Player> players) {
+    public GameStateDTO(BoardState boardState, Map<String, com.serpentia.model.Player> players) {
         this.roomId = boardState.getRoomId();
         this.width = boardState.getWidth();
         this.height = boardState.getHeight();

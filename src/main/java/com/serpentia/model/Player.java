@@ -1,6 +1,5 @@
 package com.serpentia.model;
 
-import com.serpentia.Point;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;

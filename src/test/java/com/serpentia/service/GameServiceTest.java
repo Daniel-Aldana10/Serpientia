@@ -1,7 +1,9 @@
 package com.serpentia.service;
 
-import com.serpentia.BoardState;
 import com.serpentia.enums.GameMode;
+import com.serpentia.model.BoardState;
+import com.serpentia.model.Point;
+import com.serpentia.model.Player;
 import com.serpentia.repository.GameRepository;
 import com.serpentia.websocket.GameEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,18 +14,22 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import java.util.Arrays;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class GameServiceTest {
+
     @Mock
     private GameRepository gameRepository;
+
     @Mock
     private SimpMessagingTemplate ws;
+
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private GameService gameService;
 
@@ -34,39 +40,63 @@ class GameServiceTest {
     }
 
     @Test
-    void testInitRoom_createsBoardAndSendsEvent() {
+    void testInitRoom_createsBoardAndSendsStartEvent() {
         String roomId = "room1";
-        var players = Arrays.asList("player1", "player2");
+        List<String> players = Arrays.asList("player1", "player2");
+
         gameService.initRoom(roomId, players, GameMode.COMPETITIVE, 100);
-        verify(gameRepository, times(1)).saveBoard(any(BoardState.class));
-        verify(ws, atLeastOnce()).convertAndSend(contains(roomId), any(GameEvent.class));
+
+        verify(gameRepository).saveBoard(any(BoardState.class));
+        verify(ws, times(1)).convertAndSend(contains(roomId), (Object) argThat(event -> {
+            return event instanceof GameEvent && ((GameEvent) event).getType().equals("START");
+        }));
     }
 
     @Test
-    void testSetDirection_updatesDirection() {
+    void testSetDirection_whenInGame_updatesDirectionAndSaves() {
         String roomId = "room1";
         String player = "player1";
+        String direction = "UP";
+
         BoardState board = mock(BoardState.class);
+        Map<String, String> directions = new HashMap<>();
+        Player p = new Player(player, "#FF0000", new Point(0, 0));
+
         when(gameRepository.getBoard(roomId)).thenReturn(board);
         when(board.getStatus()).thenReturn("IN_GAME");
-        when(board.getSnakeDirections()).thenReturn(new java.util.HashMap<>());
+        when(board.getSnakeDirections()).thenReturn(directions);
+        when(board.getPlayers()).thenReturn(Map.of(player, p));
+
         doNothing().when(board).reconstructPlayersIfNeeded();
-        gameService.setDirection(roomId, player, "UP");
+
+        gameService.setDirection(roomId, player, direction);
+
+        assertEquals(direction, directions.get(player));
         verify(gameRepository).saveBoard(board);
     }
 
+
     @Test
-    void testDeleteAllGames_callsRepository() {
-        gameService.deleteAllGames();
-        verify(gameRepository).deleteAllGames();
+    void testSetDirection_boardNull_doesNothing() {
+        when(gameRepository.getBoard("room1")).thenReturn(null);
+        gameService.setDirection("room1", "player1", "LEFT");
+        verify(gameRepository, never()).saveBoard(any());
     }
 
     @Test
-    void testGetBoardState_returnsBoard() {
+    void testGetBoardState_returnsExpectedBoard() {
         String roomId = "room1";
         BoardState board = new BoardState();
         when(gameRepository.getBoard(roomId)).thenReturn(board);
+
         BoardState result = gameService.getBoardState(roomId);
+
         assertEquals(board, result);
     }
-} 
+
+    @Test
+    void testDeleteAllGames_delegatesToRepository() {
+        gameService.deleteAllGames();
+        verify(gameRepository).deleteAllGames();
+    }
+}

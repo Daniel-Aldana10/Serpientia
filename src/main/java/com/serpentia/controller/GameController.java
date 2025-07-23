@@ -1,6 +1,6 @@
 package com.serpentia.controller;
 
-import com.serpentia.BoardState;
+import com.serpentia.model.BoardState;
 import com.serpentia.dto.GameStateDTO;
 import com.serpentia.dto.RoomDTO;
 import com.serpentia.service.GameService;

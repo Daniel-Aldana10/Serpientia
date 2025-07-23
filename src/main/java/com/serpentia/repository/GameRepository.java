@@ -1,7 +1,7 @@
 package com.serpentia.repository;
 
 
-import com.serpentia.BoardState;
+import com.serpentia.model.BoardState;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 

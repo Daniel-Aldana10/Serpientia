@@ -17,8 +17,6 @@ public class User {
     private Long id;
     @Column(unique = true, nullable = false)
     private String username;
-    @Column(unique = true, nullable = false)
-    private String email;
     @Column(nullable = false)
     private String password;
     private Integer gamesPlayed = 0;
@@ -30,12 +28,11 @@ public class User {
      * Constructor para crear un nuevo usuario con información básica.
      *
      * @param username Nombre de usuario único
-     * @param email Dirección de correo electrónico única
      * @param password Contraseña encriptada
      */
-    public User(String username, String email, String password) {
+    public User(String username, String password) {
         this.username = username;
-        this.email = email;
+
         this.password = password;
     }
 }
