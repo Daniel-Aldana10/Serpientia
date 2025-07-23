@@ -93,11 +93,6 @@
 			<artifactId>java-jwt</artifactId>
 			<version>4.4.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -126,7 +121,77 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<excludes>
+								<exclude>com/serpentia/config/**</exclude>
+								<exclude>com/serpentia/controller/**</exclude>
+								<exclude>com/serpentia/dto/**</exclude>
+								<exclude>com/serpentia/enums/**</exclude>
+								<exclude>com/serpentia/exeptions/**</exclude>
+								<exclude>com/serpentia/model/**</exclude>
+								<exclude>com/serpentia/repository/**</exclude>
+								<exclude>com/serpentia/security/**</exclude>
+								<exclude>com/serpentia/websocket/**</exclude>
+								<exclude>com/serpentia/SerpentiaApplication.class</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>jacoco-check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>CLASS</element>
+									<excludes>
+										<exclude>com.serpentia.config.*</exclude>
+										<exclude>com.serpentia.controller.*</exclude>
+										<exclude>com.serpentia.dto.*</exclude>
+										<exclude>com.serpentia.enums.*</exclude>
+										<exclude>com.serpentia.exeptions.*</exclude>
+										<exclude>com.serpentia.model.*</exclude>
+										<exclude>com.serpentia.repository.*</exclude>
+										<exclude>com.serpentia.security.*</exclude>
+										<exclude>com.serpentia.websocket.*</exclude>
+										<exclude>com.serpentia.SerpentiaApplication</exclude>
+									</excludes>
+									<limits>
+										<limit>
+											<counter>CLASS</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.85</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
+
 	</build>
 
 </project>

@@ -1,6 +1,6 @@
 package com.serpentia.dto;
 
-import com.serpentia.Point;
+import com.serpentia.model.Point;
 import com.serpentia.model.Player;
 import lombok.Data;
 import lombok.NoArgsConstructor;

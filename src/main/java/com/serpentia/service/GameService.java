@@ -1,8 +1,8 @@
 package com.serpentia.service;
 
 
-import com.serpentia.BoardState;
-import com.serpentia.Point;
+import com.serpentia.model.BoardState;
+import com.serpentia.model.Point;
 import com.serpentia.model.Player;
 import com.serpentia.repository.GameRepository;
 import com.serpentia.websocket.GameEvent;

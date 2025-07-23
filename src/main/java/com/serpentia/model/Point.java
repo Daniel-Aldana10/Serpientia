@@ -1,4 +1,4 @@
-package com.serpentia;
+package com.serpentia.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

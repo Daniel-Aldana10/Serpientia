@@ -1,7 +1,5 @@
-package com.serpentia;
+package com.serpentia.model;
 
-import com.serpentia.model.Player;
-import com.serpentia.model.Team;
 import com.serpentia.enums.GameMode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
