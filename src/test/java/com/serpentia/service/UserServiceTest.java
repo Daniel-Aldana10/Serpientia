@@ -33,7 +33,7 @@ class UserServiceTest {
 
     @Test
     void testLoadUserByUsername_found() {
-        User user = new User("user1", "email@test.com", "pass");
+        User user = new User("user1",  "pass");
         when(userRepository.findByUsername("user1")).thenReturn(Optional.of(user));
         UserDetails details = userService.loadUserByUsername("user1");
         assertEquals("user1", details.getUsername());
@@ -43,10 +43,8 @@ class UserServiceTest {
     void testRegisterUser_success() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("user2");
-        req.setEmail("email2@test.com");
         req.setPassword("pass");
         when(userRepository.findByUsername("user2")).thenReturn(Optional.empty());
-        when(userRepository.findByEmail("email2@test.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("pass")).thenReturn("encoded");
         userService.registerUser(req);
         verify(userRepository).save(any(User.class));
@@ -54,7 +52,7 @@ class UserServiceTest {
 
     @Test
     void testUpdateUserStats_updatesStats() {
-        User user = new User("user3", "email3@test.com", "pass");
+        User user = new User("user3",  "pass");
         when(userRepository.findByUsername("user3")).thenReturn(Optional.of(user));
         userService.updateUserStats("user3", 100, true);
         verify(userRepository).save(user);
@@ -66,7 +64,7 @@ class UserServiceTest {
 
     @Test
     void testGetStatsUser_returnsStats() {
-        User user = new User("user4", "email4@test.com", "pass");
+        User user = new User("user4", "pass");
         user.setGamesPlayed(10);
         user.setGamesWon(5);
         user.setTotalPoints(200);

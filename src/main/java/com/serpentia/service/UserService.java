@@ -69,11 +69,6 @@ public class UserService implements UserDetailsService {
             throw new SerpentiaException("El nombre de usuario ya está en uso", "Verifica los datos enviados, algo no está bien.", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
 
-        // Validar que el email no exista
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new SerpentiaException("El email ya está registrado", "Verifica los datos enviados, algo no está bien.", org.springframework.http.HttpStatus.BAD_REQUEST);
-        }
-
         // Validar longitud del username (3-15 caracteres)
         if (request.getUsername().length() < 3 || request.getUsername().length() > 15) {
             throw new SerpentiaException("El nombre de usuario debe tener entre 3 y 15 caracteres", "Verifica los datos enviados, algo no está bien.", org.springframework.http.HttpStatus.BAD_REQUEST);
@@ -84,7 +79,7 @@ public class UserService implements UserDetailsService {
             throw new SerpentiaException("El nombre de usuario solo puede contener letras y números", "Verifica los datos enviados, algo no está bien.", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
 
-        User user = new User(request.getUsername(), request.getEmail(), passwordEncoder.encode(request.getPassword()));
+        User user = new User(request.getUsername(), passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
     }
 
