@@ -25,7 +25,6 @@ public class GameEventPublisher {
      */
     public void publishEvent(Object event) {
         try {
-            // Agregar metadata del evento para mejor identificación
             EventWrapper wrapper = new EventWrapper(
                     event.getClass().getSimpleName(),
                     System.currentTimeMillis(),
