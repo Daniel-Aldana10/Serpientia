@@ -5,6 +5,7 @@ spring:
     import: optional:file:.env[.properties]
   datasource:
     url: ${DB_URL}
+
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -12,6 +13,7 @@ spring:
       idle-timeout: 30000   # Cierra conexiones inactivas después de 30s
       max-lifetime: 1800000  # 30 min (menor que el timeout de PostgreSQL)
       keepalive-time: 300000
+
   jpa:
     hibernate:
       ddl-auto: update
