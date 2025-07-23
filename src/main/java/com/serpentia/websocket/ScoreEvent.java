@@ -23,13 +23,15 @@ public class ScoreEvent {
      * Lista actualizada de jugadores con sus puntajes
      */
     private List<PlayerDTO> players;
+    private String roomId;
     
     /**
      * Constructor para evento de actualización de puntaje
      */
-    public ScoreEvent(String type, java.util.List<PlayerDTO> players) {
+    public ScoreEvent(String type, java.util.List<PlayerDTO> players, String roomId) {
         this.type = type;
         this.players = players;
+        this.roomId = roomId;
     }
 
 } 
