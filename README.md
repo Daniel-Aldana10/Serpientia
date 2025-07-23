@@ -186,9 +186,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.txt](LICENSE.
 - [x] Creación de salas
 - [x] Lógica del juego
 - [x] Perfil de usuario con estadísticas
-### 🔄 En Progreso
-- [ ] Diferentes modos de juego
-- [ ] Power-ups
+
 
 
 
