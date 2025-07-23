@@ -8,6 +8,7 @@ import com.serpentia.repository.GameRepository;
 import com.serpentia.websocket.GameEvent;
 import com.serpentia.websocket.ScoreEvent;
 import com.serpentia.dto.PlayerDTO;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class GameService {
     private final ApplicationEventPublisher eventPublisher;
     private static final String topic = "/topic/game/";
     private static final String game = "IN_GAME";
+
     public GameService(GameRepository gameRepository, SimpMessagingTemplate ws, ApplicationEventPublisher eventPublisher) {
         this.gameRepository = gameRepository;
         this.ws = ws;
@@ -51,7 +53,9 @@ public class GameService {
         board.assignTeamsAutomatically();
         for (int i = 0; i < 5; i++) board.spawnFruit();
         gameRepository.saveBoard(board);
-        ws.convertAndSend(topic + roomId, new GameEvent("START", null, board));
+        GameEvent event = new GameEvent("START", null, board);
+        ws.convertAndSend(topic + roomId, event);
+        eventPublisher.publishEvent(event);
     }
 
     public void setDirection(String roomId, String player, String dir) {
@@ -68,6 +72,7 @@ public class GameService {
     }
 
     @Scheduled(fixedRate = 200)
+    @SchedulerLock(name = "gameLoopLock", lockAtLeastFor = "200ms", lockAtMostFor = "500ms")
     public void gameLoop() {
         Set<String> keys = gameRepository.getAllGameKeys();
         if (keys == null) return;
@@ -82,7 +87,9 @@ public class GameService {
             }
             updateBoard(board);
             gameRepository.saveBoard(board);
-            ws.convertAndSend(topic + roomId, new GameEvent("UPDATE", null, board));
+            GameEvent event = new GameEvent("UPDATE", null, board);
+            ws.convertAndSend(topic + roomId, event);
+            eventPublisher.publishEvent(event);
         }
     }
 
@@ -114,7 +121,9 @@ public class GameService {
                 eliminated.add(p);
                 PlayerEliminatedEvent event = new PlayerEliminatedEvent(p, b.getRoomId(), b.getPlayerScore(p), b.getAlivePlayerCount() + 1);
                 eventPublisher.publishEvent(event);
-                ws.convertAndSend(topic + b.getRoomId(), new GameEvent("COLLISION", p, b));
+                GameEvent gameEvent = new GameEvent("COLLISION", p, b);
+                ws.convertAndSend(topic + b.getRoomId(), gameEvent);
+                eventPublisher.publishEvent(gameEvent);
                 continue;
             }
             for (Deque<Point> other : snakes.values()) {
@@ -122,7 +131,9 @@ public class GameService {
                     eliminated.add(p);
                     PlayerEliminatedEvent event = new PlayerEliminatedEvent(p, b.getRoomId(), b.getPlayerScore(p), b.getAlivePlayerCount() + 1);
                     eventPublisher.publishEvent(event);
-                    ws.convertAndSend(topic + b.getRoomId(), new GameEvent("COLLISION", p, b));
+                    GameEvent gameEvent = new GameEvent("COLLISION", p, b);
+                    ws.convertAndSend(topic + b.getRoomId(), gameEvent);
+                    eventPublisher.publishEvent(gameEvent);
                     break;
                 }
             }
@@ -150,15 +161,22 @@ public class GameService {
                     }
                 }
 
-                ws.convertAndSend(topic + b.getRoomId(), new GameEvent("FRUIT", p, b));
+                GameEvent fruitEvent = new GameEvent("FRUIT", p, b);
+                ws.convertAndSend(topic + b.getRoomId(), fruitEvent);
+                eventPublisher.publishEvent(fruitEvent);
+
                 List<PlayerDTO> playerDTOs = b.getPlayers().values().stream().map(PlayerDTO::new).toList();
-                ws.convertAndSend(topic + b.getRoomId(), new ScoreEvent("SCORE_UPDATE", playerDTOs));
+                ScoreEvent scoreEvent = new ScoreEvent("SCORE_UPDATE", playerDTOs, b.getRoomId());
+                ws.convertAndSend(topic + b.getRoomId(), scoreEvent);
+                eventPublisher.publishEvent(scoreEvent);
             } else {
                 body.pollLast();
             }
         }
 
-        ws.convertAndSend(topic + b.getRoomId(), new GameEvent("UPDATE", null, b));
+        GameEvent updateEvent = new GameEvent("UPDATE", null, b);
+        ws.convertAndSend(topic + b.getRoomId(), updateEvent);
+        eventPublisher.publishEvent(updateEvent);
 
         if (b.isGameFinished()) {
             b.setStatus("FINISHED");
@@ -169,8 +187,13 @@ public class GameService {
                             calculatePosition(player, b),
                             isPlayerWinner(player, b)))
                     .toList();
-            eventPublisher.publishEvent(new GameFinishedEvent(b.getRoomId(), results));
-            ws.convertAndSend(topic + b.getRoomId(), new GameEvent("END", null, b));
+            GameFinishedEvent finishedEvent = new GameFinishedEvent(b.getRoomId(), results);
+            eventPublisher.publishEvent(finishedEvent);
+
+            GameEvent endEvent = new GameEvent("END", null, b);
+            ws.convertAndSend(topic + b.getRoomId(), endEvent);
+            eventPublisher.publishEvent(endEvent);
+
             gameRepository.deleteBoard(b.getRoomId());
         }
     }
