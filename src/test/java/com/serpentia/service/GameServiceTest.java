@@ -38,7 +38,7 @@ class GameServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        gameService = new GameService(gameRepository, ws);
+        gameService = new GameService(gameRepository, ws, eventPublisher);
     }
 
     @Test

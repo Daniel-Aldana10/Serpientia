@@ -23,13 +23,14 @@ public class GameService {
 
     private final GameRepository gameRepository;
     private final SimpMessagingTemplate ws;
-
+    private final ApplicationEventPublisher eventPublisher;
     private static final String topic = "/topic/game/";
     private static final String game = "IN_GAME";
 
-    public GameService(GameRepository gameRepository, SimpMessagingTemplate ws) {
+    public GameService(GameRepository gameRepository, SimpMessagingTemplate ws, ApplicationEventPublisher eventPublisher) {
         this.gameRepository = gameRepository;
         this.ws = ws;
+        this.eventPublisher = eventPublisher;
     }
 
     private String assignPlayerColor(int playerIndex) {
@@ -54,6 +55,7 @@ public class GameService {
         gameRepository.saveBoard(board);
         GameEvent event = new GameEvent("START", null, board);
         ws.convertAndSend(topic + roomId, event);
+        eventPublisher.publishEvent(event);
 
     }
 
@@ -88,6 +90,7 @@ public class GameService {
             gameRepository.saveBoard(board);
             GameEvent event = new GameEvent("UPDATE", null, board);
             ws.convertAndSend(topic + roomId, event);
+            eventPublisher.publishEvent(event);
         }
     }
 
@@ -121,7 +124,7 @@ public class GameService {
 
                 GameEvent gameEvent = new GameEvent("COLLISION", p, b);
                 ws.convertAndSend(topic + b.getRoomId(), gameEvent);
-
+                eventPublisher.publishEvent(gameEvent);
                 continue;
             }
             for (Deque<Point> other : snakes.values()) {
@@ -131,7 +134,7 @@ public class GameService {
 
                     GameEvent gameEvent = new GameEvent("COLLISION", p, b);
                     ws.convertAndSend(topic + b.getRoomId(), gameEvent);
-
+                    eventPublisher.publishEvent(gameEvent);
                     break;
                 }
             }
@@ -161,12 +164,12 @@ public class GameService {
 
                 GameEvent fruitEvent = new GameEvent("FRUIT", p, b);
                 ws.convertAndSend(topic + b.getRoomId(), fruitEvent);
-
+                eventPublisher.publishEvent(fruitEvent);
 
                 List<PlayerDTO> playerDTOs = b.getPlayers().values().stream().map(PlayerDTO::new).toList();
                 ScoreEvent scoreEvent = new ScoreEvent("SCORE_UPDATE", playerDTOs, b.getRoomId());
                 ws.convertAndSend(topic + b.getRoomId(), scoreEvent);
-
+                eventPublisher.publishEvent(scoreEvent);
             } else {
                 body.pollLast();
             }
@@ -174,7 +177,7 @@ public class GameService {
 
         GameEvent updateEvent = new GameEvent("UPDATE", null, b);
         ws.convertAndSend(topic + b.getRoomId(), updateEvent);
-
+        eventPublisher.publishEvent(updateEvent);
 
 
         if (b.isGameFinished()) {
@@ -187,11 +190,11 @@ public class GameService {
                             isPlayerWinner(player, b)))
                     .toList();
             GameFinishedEvent finishedEvent = new GameFinishedEvent(b.getRoomId(), results);
-
+            eventPublisher.publishEvent(finishedEvent);
 
             GameEvent endEvent = new GameEvent("END", null, b);
             ws.convertAndSend(topic + b.getRoomId(), endEvent);
-           ;
+            eventPublisher.publishEvent(endEvent);
 
             gameRepository.deleteBoard(b.getRoomId());
         }
